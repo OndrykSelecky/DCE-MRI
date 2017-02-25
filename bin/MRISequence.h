@@ -42,8 +42,9 @@ public:
 	void show(std::string window_name = std::string(""));
 	
 	//Access to whole vector
-	const std::vector<cv::Mat>& data() const { return m_images; }
+	std::vector<cv::Mat>& data() { return m_images; }
 
+	const std::vector<cv::Mat>& data() const { return m_images; }
 
 	//Number of images
 	size_t image_count() const { return m_images.size(); }

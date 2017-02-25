@@ -6,13 +6,15 @@
 #include "Util.h"
 
 
-features detect_features(const MRISequence& sequence);
+//sequence_features detect_features(const MRISequence& sequence);
 
-void show_features(MRISequence& sequence, const features& features);
+feat detect_features_backwards(const MRISequence& sequence, double max_difference = 1.5f, int maxCorners = 500, double qualityLevel = 0.01, int minDistance = 5);
 
-void registration();
+void show_features(MRISequence& sequence, const feat& features);
 
-MRISequence registrate(const MRISequence& sequence, const features& features);
+void registration(const std::string& folder, int sequence_id);
+
+MRISequence warp_sequence(const MRISequence& sequence, const feat& features);
 
 //void motion_test();
 

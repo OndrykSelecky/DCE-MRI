@@ -57,7 +57,7 @@ MRISequence & MRISequence::operator=(const MRISequence& other)
 		}
 		this->m_images = images;
 	}
-	std::cout << "Copy\n";
+	
 	return *this;
 }
 
@@ -74,7 +74,7 @@ MRISequence & MRISequence::operator=(MRISequence&& other)
 		this->m_images = other.m_images;
 		other.m_images.clear();
 	}
-	std::cout << "Move\n";
+	
 	return *this;
 }
 

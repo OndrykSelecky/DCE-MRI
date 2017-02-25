@@ -7,86 +7,176 @@
 #include <fstream>
 #include <cmath>
 
-features detect_features(const MRISequence& sequence)
+//sequence_features detect_features(const MRISequence& sequence)
+//{
+//	auto image_count = sequence.image_count();
+//	if (image_count < 2) throw std::invalid_argument("number of images (" + std::to_string(image_count) + ") is too small\n");
+//	
+//	double sequence_contrast = 255.0*sequence.get_contrast();
+//
+//	sequence_features detected_features;
+//	
+//	std::vector<cv::Point2f> prev_feature_points;
+//
+//	cv::Mat prev_img;
+//	sequence[0].convertTo(prev_img, CV_8U, sequence_contrast);
+//	
+//	int maxCorners = 150;
+//	double qualityLevel = 0.001;
+//	int minDistance = 3;
+//
+//	cv::goodFeaturesToTrack(prev_img, prev_feature_points, maxCorners, qualityLevel, minDistance, cv::noArray());
+//
+//	detected_features.push_back(prev_feature_points);
+//
+//	for (std::vector<cv::Mat>::const_iterator it = sequence.data().begin() + 1; it != sequence.data().end(); ++it)
+//	{
+//		cv::Mat next_img;
+//		it->convertTo(next_img, CV_8U, sequence_contrast);
+//
+//		std::vector< cv::Point2f > next_feature_points;
+//		std::vector<unsigned char> status;
+//		std::vector<float> error;
+//		
+//		cv::calcOpticalFlowPyrLK(prev_img, next_img, prev_feature_points, next_feature_points, status, error);
+//
+//		detected_features.push_back(next_feature_points);
+//
+//		prev_feature_points = next_feature_points;
+//		prev_img = next_img;
+//
+//	}
+//		
+//	return detected_features;
+//}
+
+feat detect_features_backwards(const MRISequence& sequence, double max_difference, int maxCorners, double qualityLevel, int minDistance)
 {
 	auto image_count = sequence.image_count();
 	if (image_count < 2) throw std::invalid_argument("number of images (" + std::to_string(image_count) + ") is too small\n");
-	
-	double contrast = 255.0*sequence.get_contrast();
 
-	features features;
-	
-	std::vector<cv::Point2f> prev_features;
+	double sequence_contrast = 255.0*sequence.get_contrast();
 
+	feat detected_features_flow;
+	std::vector<std::vector<unsigned char>> detected_features_status;
+	std::vector<cv::Point2f> prev_feature_points;
+	
 	cv::Mat prev_img;
-	sequence[0].convertTo(prev_img, CV_8U, contrast);
+	sequence[0].convertTo(prev_img, CV_8U, sequence_contrast);
 	
-	int maxCorners = 150;
-	double qualityLevel = 0.001;
-	int minDistance = 3;
 
-	cv::goodFeaturesToTrack(prev_img, prev_features, maxCorners, qualityLevel, minDistance, cv::noArray());
+	cv::goodFeaturesToTrack(prev_img, prev_feature_points, maxCorners, qualityLevel, minDistance, cv::noArray());
 
-	features.push_back(prev_features);
+
+	int features_count = prev_feature_points.size();
+	detected_features_flow.push_back(prev_feature_points);
+	detected_features_status.push_back(std::vector<unsigned char>(features_count, 1));
+	
 
 	for (std::vector<cv::Mat>::const_iterator it = sequence.data().begin() + 1; it != sequence.data().end(); ++it)
 	{
 		cv::Mat next_img;
-		it->convertTo(next_img, CV_8U, contrast);
+		it->convertTo(next_img, CV_8U, sequence_contrast);
 
-		std::vector< cv::Point2f > next_features;
+		std::vector< cv::Point2f > next_feature_points;
 		std::vector<unsigned char> status;
 		std::vector<float> error;
+
+		cv::calcOpticalFlowPyrLK(prev_img, next_img, prev_feature_points, next_feature_points, status, error);
+
+		detected_features_flow.push_back(next_feature_points);
+		detected_features_status.push_back(status);
 		
-		cv::calcOpticalFlowPyrLK(prev_img, next_img, prev_features, next_features, status, error);
-
-		features.push_back(next_features);
-
-		prev_features = next_features;
+		prev_feature_points = next_feature_points;
 		prev_img = next_img;
-
 	}
-		
-	return features;
+
+
+
+	std::vector<unsigned char> valid_features(features_count, 1);
+
+	for (auto i = 1; i < image_count; i++)
+	{
+		for (auto j = 0; j < features_count; j++)
+		{
+			double dx = std::abs(detected_features_flow[i - 1][j].x - detected_features_flow[i][j].x);
+			double dy = std::abs(detected_features_flow[i - 1][j].y - detected_features_flow[i][j].y);
+
+			double difference = std::sqrt(dx*dx + dy*dy);
+			
+			if (difference > max_difference || detected_features_status[i][j] == 0)			
+			{
+				valid_features[j] = false;
+			}
+		}
+	}
+
+
+	/*std::sort(mdiff.begin(), mdiff.end());
+	std::reverse(mdiff.begin(), mdiff.end());
+	for (int i = 0; i < 30; i++) std::cout << mdiff[i] << " ";*/
+
+	
+	int good_features_count = 0;
+	for (const auto& feature : valid_features)
+	{
+		if (feature == 1) good_features_count++;
+	}
+	std::cout << "prev: " << features_count << ", now:" << good_features_count << "\n";
+
+
+	feat final_features;
+
+	for (int i = 0; i < image_count; i++)
+	{		
+		std::vector<cv::Point2f> feature_vector;		
+		feature_vector.reserve(good_features_count);
+
+		for (auto j = 0; j < features_count; j++)
+		{
+			if (valid_features[j] == 1)
+			{
+				feature_vector.push_back(detected_features_flow[i][j]);				
+			}
+		}
+
+		final_features.push_back(feature_vector);
+	}
+
+	return final_features;
 }
 
-void show_features(MRISequence& sequence, const features& features)
+void show_features(MRISequence& sequence, const feat& features)
 {
 	if (sequence.image_count() != features.size() || sequence.image_count() < 1) throw std::out_of_range("Sequence and features must both have equal, non-zero size");
 
 	MRISequence feature_sequence;
 	feature_sequence.set_contrast(sequence.get_contrast());
 
+	/*cv::Mat dst;
+	sequence[0].copyTo(dst);
+	feature_sequence.add_image(dst);
 	int max_diff = 2;
-	for (auto i = 1; i < sequence.image_count(); i++)
+*/
+	for (auto i = 0; i < sequence.image_count(); i++)
 	{
-		cv::Mat prev_img, next_img;
-
-		sequence[i - 1].copyTo(prev_img);
-		sequence[i].copyTo(next_img);		
+		cv::Mat img;
+		sequence[i].copyTo(img);		
 
 		for (auto j = 0; j < features[i].size(); j++)
-		{			
-			double dx = std::abs(features[i - 1][j].x - features[i][j].x);
-			double dy = std::abs(features[i - 1][j].y - features[i][j].y);
-
-			if (dx < max_diff && dy < max_diff)
-			{
-				circle(prev_img, features[i-1][j], 4, cv::Scalar(255, 255, 255), -1, 8, 0);
-				circle(next_img, features[i][j], 4, cv::Scalar(255, 255, 255), -1, 8, 0);
-			}			
+		{					
+				circle(img, features[i][j], 4, cv::Scalar(255, 255, 255), -1, 8, 0);
 		}
 
-		feature_sequence.add_image(prev_img);
-		feature_sequence.add_image(next_img);
 		
+		feature_sequence.add_image(img);		
 	}
 
 	sequence = std::move(feature_sequence);
-	sequence.show("Featured Window");
+	sequence.show("Features Detected");
 }
 
-MRISequence registrate(const MRISequence& sequence, const features& features)
+MRISequence warp_sequence(const MRISequence& sequence, const feat& features)
 {
 	auto image_count = sequence.image_count();
 	if (image_count < 2) throw std::invalid_argument("number of images (" + std::to_string(image_count) + ") is too small\n");
@@ -94,49 +184,40 @@ MRISequence registrate(const MRISequence& sequence, const features& features)
 	MRISequence transformed_sequence;
 	transformed_sequence.add_image(sequence[0]);
 
-	int max_diff = 2;
 
 	for (auto i = 1; i < image_count; i++)
-	{
-		std::vector< cv::Point2f > prev_t_corners;
-		std::vector<cv::Point2f> next_t_corners;
+	{		
+		cv::Mat h = cv::findHomography(features[i], features[0]);
 
-		//max_diff = std::log2(i) + 1;
-
-		for (int j = 0; j < features[0].size(); j++)
-		{
-			double dx = std::abs(features[i-1][j].x - features[i][j].x);
-			double dy = std::abs(features[i-1][j].y - features[i][j].y);
-
-			if (dx < max_diff && dy < max_diff)
-			{
-				prev_t_corners.push_back(features[0][j]);
-				next_t_corners.push_back(features[i][j]);
-			}
-		}
-
-		cv::Mat h = cv::findHomography(next_t_corners, prev_t_corners);
 		cv::Mat dst;
 		cv::warpPerspective(sequence[i], dst, h, sequence[i].size());
 
-		transformed_sequence.add_image(dst);
-		
+		transformed_sequence.add_image(dst);		
 	}
+
 	transformed_sequence.set_contrast();
 	
 	return transformed_sequence;
 }
 
-void registration()
-{
-	std::string folder = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC14/1.3.6.1.4.1.14519.5.2.1.2103.7010.297016782834828170309889288895";
-	//std::string folder = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC06/1.3.6.1.4.1.14519.5.2.1.2103.7010.269874611034344926547684818265";
-	//std::string folder = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC10/1.3.6.1.4.1.14519.5.2.1.2103.7010.634114621738943599785009586807";
-	
 
-	std::shared_ptr<MRISessionHorizontal> session(new MRISessionHorizontal(folder));
-	session->read();
+cv::Mat img;
+int lower, upper;
+
+void on_trackbar2(int, void*)
+{
+	cv::Mat dst;
+	cv::Canny(img, dst, lower, upper, 3, true);
+	cv::namedWindow("Edges", cv::WINDOW_NORMAL);
+	imshow("Edges", dst);
+
+}
+
+void registration(const std::string& folder, int sequence_id)
+{
 	
+	std::shared_ptr<MRISessionHorizontal> session(new MRISessionHorizontal(folder));
+	session->read();	
 	
 	auto sequence = (*session)[54];		
 	std::cout << sequence.use_count();
@@ -149,18 +230,34 @@ void registration()
 		std::cout << e.what();
 		return;
 	}	
-	sequence->show("W1");
+	std::reverse(sequence->data().begin(), sequence->data().end());
+	sequence->show("Sequence");
 	
 
-	features features = detect_features(*sequence);
+	feat features = detect_features_backwards(*sequence);
 	MRISequence feature_sequence(*sequence);
 	show_features(feature_sequence, features);
 
 
-	MRISequence transformed_sequence = registrate(*sequence, features);
-	transformed_sequence.show("W2");
+	MRISequence transformed_sequence = warp_sequence(*sequence, features);
+	transformed_sequence.show("Warped sequence");
 	
+	return;
+
+	//canny
+	transformed_sequence[0].convertTo(img, CV_8UC1, transformed_sequence.get_contrast()*255.0);
+	cv::blur(img, img, cv::Size(3, 3));
+	cv::namedWindow("Edges", cv::WINDOW_NORMAL);
+	imshow("Edges", img);
+	lower = 0;
+	upper = 0;
+	cv::createTrackbar("Lower", "Edges", &lower, 300, on_trackbar2);
+	cv::createTrackbar("Upper", "Edges", &upper, 300, on_trackbar2);
+	cv::waitKey(0);
+
 }
+
+
 
 /*
 void motion_test()
