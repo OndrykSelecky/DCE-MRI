@@ -331,6 +331,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="MRISessionHorizontal.cpp" />
     <ClCompile Include="MyOpenCVDicomReader.cpp" />
     <ClCompile Include="Registration.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="s_hull_pro.cpp" />
     <ClCompile Include="Util.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -345,6 +347,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="MyOpenCVDicomReader.h" />
     <ClInclude Include="MRISequence.h" />
     <ClInclude Include="Registration.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="s_hull_pro.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

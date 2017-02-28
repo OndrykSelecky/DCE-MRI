@@ -25,6 +25,12 @@
     <ClCompile Include="MRISequenceHorizontal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="s_hull_pro.cpp">
+      <Filter>Source Files\s_hull</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files\s_hull</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\ondryk\Documents\Visual Studio 2015\Projects\DCE-MRI\src\CMakeLists.txt" />
@@ -32,6 +38,9 @@
   <ItemGroup>
     <Filter Include="Source Files">
       <UniqueIdentifier>{7F0732C3-75D6-33A4-9F70-F71EEA08F69F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\s_hull">
+      <UniqueIdentifier>{003e4534-f983-47cd-9c31-e3579188babc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +64,12 @@
     </ClInclude>
     <ClInclude Include="MRISequenceHorizontal.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="s_hull_pro.h">
+      <Filter>Source Files\s_hull</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Source Files\s_hull</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
