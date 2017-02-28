@@ -148,15 +148,19 @@ void show_features(MRISequence& sequence, const features& features)
 	sequence.show("Features Detected");
 }
 
-std::vector<Triad> get_triangles(const features& features, const MRISequence& sequence)
+std::vector<Triangle> get_triangles(features& features, const MRISequence& sequence)
 {
+
+	for (auto i = 0; i < features.size(); i++)
+	{
+		features[i].push_back(cv::Point2f(0.0, 0.0));
+		features[i].push_back(cv::Point2f(sequence[0].size().width - 1, 0.0));
+		features[i].push_back(cv::Point2f(0.0, sequence[0].size().height - 1));
+		features[i].push_back(cv::Point2f(sequence[0].size().width - 1, sequence[0].size().height - 1));
+	}
 
 	auto triangle_features = features[0];	
 
-	triangle_features.push_back(cv::Point2f(0.0, 0.0));
-	triangle_features.push_back(cv::Point2f(sequence[0].size().width - 1, 0.0));
-	triangle_features.push_back(cv::Point2f(0.0, sequence[0].size().height - 1));
-	triangle_features.push_back(cv::Point2f(sequence[0].size().width - 1, sequence[0].size().height - 1));
 
 	std::vector<Shx> points;
 	for (int i = 0; i < triangle_features.size(); i++)
@@ -176,10 +180,25 @@ std::vector<Triad> get_triangles(const features& features, const MRISequence& se
 	std::vector<Triad> triads;
 	s_hull_pro(points, triads);
 
-	return triads;
+	std::vector<Triangle> triangles;
+	triangles.reserve(triads.size());
+
+	for (const auto& triad : triads)
+	{
+		Triangle triangle;
+		triangle.a = triad.a;
+		triangle.b = triad.b;
+		triangle.c = triad.c;
+		triangle.point_coordinates.push_back(triangle_features[triangle.a]);
+		triangle.point_coordinates.push_back(triangle_features[triangle.b]);
+		triangle.point_coordinates.push_back(triangle_features[triangle.c]);
+		triangles.push_back(triangle);
+	}
+
+	return triangles;
 }
 
-void show_triangles(MRISequence& sequence, const std::vector<Triad>& triangles, const features& features)
+void show_triangles(MRISequence& sequence, const std::vector<Triangle>& triangles, const features& features)
 {
 	MRISequence triangle_sequence;
 	triangle_sequence.set_contrast(sequence.get_contrast());
@@ -192,10 +211,6 @@ void show_triangles(MRISequence& sequence, const std::vector<Triad>& triangles, 
 
 		auto triangle_features = features[i];
 
-		triangle_features.push_back(cv::Point2f(0.0, 0.0));
-		triangle_features.push_back(cv::Point2f(sequence[0].size().width - 1, 0.0));
-		triangle_features.push_back(cv::Point2f(0.0, sequence[0].size().height - 1));
-		triangle_features.push_back(cv::Point2f(sequence[0].size().width - 1, sequence[0].size().height - 1));
 
 		for (const auto& triangle : triangles)
 		{
@@ -203,12 +218,13 @@ void show_triangles(MRISequence& sequence, const std::vector<Triad>& triangles, 
 			cv::line(dst, triangle_features[triangle.a], triangle_features[triangle.b], cv::Scalar(255, 255, 255));
 			cv::line(dst, triangle_features[triangle.a], triangle_features[triangle.c], cv::Scalar(255, 255, 255));
 			cv::line(dst, triangle_features[triangle.c], triangle_features[triangle.b], cv::Scalar(255, 255, 255));
-			triangle_sequence.add_image(dst);
+			
 		}
 
 		triangle_sequence.add_image(dst);
 	}
 
+	
 	sequence = std::move(triangle_sequence);
 	sequence.show("Triangles");
 }
@@ -238,10 +254,30 @@ MRISequence warp_sequence(const MRISequence& sequence, const features& features)
 	return transformed_sequence;
 }
 
-//MRISequence warp_sequence(const MRISequence& sequence, const features& features, const std::vector<Triad>& triangles)
-//{
-//
-//}
+MRISequence warp_sequence(const MRISequence& sequence, const features& features, const std::vector<Triangle>& triangles)
+{
+
+	std::vector<std::vector<int>> triangle_id(sequence[0].size().width, std::vector<int>(sequence[0].size().height,-1));
+
+	for (int t_id = 0; t_id < triangles.size(); t_id++)
+	{
+		cv::Rect bounding_rect = cv::boundingRect(triangles[t_id].point_coordinates);
+		for (int i = bounding_rect.x; i < bounding_rect.x + bounding_rect.width; i++)
+		{
+			for (int j = bounding_rect.y; j < bounding_rect.y + bounding_rect.height; j++)
+				if (cv::pointPolygonTest(triangles[t_id].point_coordinates, cv::Point2f(i,j), false) >= 0)
+				{
+					triangle_id[i][j] = t_id;
+				}
+		}		
+	}
+
+	//test na dvoch obrazkoch
+
+
+
+	return MRISequence();
+}
 
 cv::Mat img;
 int lower, upper;
@@ -287,6 +323,7 @@ void registration(const std::string& folder, int sequence_id)
 	MRISequence triangle_sequence(*sequence);
 	show_triangles(triangle_sequence, triangles, features);
 
+	warp_sequence(*sequence, features, triangles);
 
 	return;
 

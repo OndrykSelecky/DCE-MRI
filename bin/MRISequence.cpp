@@ -100,26 +100,7 @@ void MRISequence::read()
 
 }
 
-/*void MRISequence::read_horizontal(MRISession& session, const std::string & file_name) 
-{	
-	try
-	{
-		for (const auto& s : session.data())
-		{			
-			cv::Mat image = read_image(s.m_folder + "/" + file_name);
-			m_images.push_back(image);
-		}
-	}
-	catch (std::invalid_argument& e)
-	{
-		throw e;
-		return;
-	}
 
-	m_folder = session.get_folder_name() + " - " + file_name;	
-
-	set_contrast();
-}*/
 
 void MRISequence::show(std::string window_name)
 {
@@ -129,7 +110,7 @@ void MRISequence::show(std::string window_name)
 	m_trackbar_max = image_count() - 1;
 	
 	(window_name == "") ? m_window_name = m_folder : m_window_name = window_name;
-	std::cout << m_window_name;
+	//std::cout << m_window_name;
 	cv::namedWindow(m_window_name, cv::WINDOW_NORMAL);
 
 	void *sequence_pointer = static_cast<MRISequence*>(this);

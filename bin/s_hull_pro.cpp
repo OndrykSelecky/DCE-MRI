@@ -178,7 +178,7 @@ void write_Shx(std::vector<Shx> &pts, char * fname){
 
 
 /*
- write out triangle ids to be compatible with matlab/octave array numbering.
+ write out Triangle ids to be compatible with matlab/octave array numbering.
 
  */
 void write_Triads(std::vector<Triad> &ts, char * fname){
@@ -268,7 +268,8 @@ int s_hull_pro( std::vector<Shx> &pts, std::vector<Triad> &triads)
   int ptest = test_center(pt0, pt1, pt2 );
   if( ptest < 0 ){
     cerr << "warning: obtuce seed triangle sellected " << endl;
-  }
+	cerr << "\n " << pt0.c << " " << pt0.r << ", " << pt1.c << " " << pt1.r << ", " << pt2.c << " " << pt2.r << "\n";
+   }
 
 
   pts.erase(pts.begin() + mid);  // necessary for round off reasons:((((((
@@ -495,7 +496,7 @@ int s_hull_pro( std::vector<Shx> &pts, std::vector<Triad> &triads)
       }
 
 
-      // triangle pidx starts at e1 and ends at e2 (inclusive).	
+      // Triangle pidx starts at e1 and ends at e2 (inclusive).	
       if( e2 < numh ){
 	for( int e=e1; e<=e2; e++){
 	  pidx.push_back(hull[e].id);
@@ -866,7 +867,7 @@ int T_flip_pro( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<i
 	tx.bc = L3;
 	
 	
-	// triangle 2;
+	// Triangle 2;
 	tx2.a = tri.a;
 	tx2.b = tri.c;
 	tx2.c = D;
@@ -883,7 +884,7 @@ int T_flip_pro( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<i
 	tri = tx;
 	flipped = 1;
 
-	// change knock on triangle labels.
+	// change knock on Triangle labels.
 	if( L3 >= 0 ){
 	  Triad &t3 = triads[L3];
 	  if( t3.ab == T2 ) t3.ab = t;
@@ -977,7 +978,7 @@ int T_flip_pro( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<i
 	tx.bc = L3;
 	
 	
-	// triangle 2;
+	// Triangle 2;
 	tx2.a = tri.c;
 	tx2.b = tri.b;
 	tx2.c = D;
@@ -994,7 +995,7 @@ int T_flip_pro( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<i
 	tri = tx;
 	flipped = 1;
 
-	// change knock on triangle labels.
+	// change knock on Triangle labels.
 	if( L3 >= 0 ){
 	  Triad &t3 = triads[L3];
 	  if( t3.ab == T2 ) t3.ab = t;
@@ -1089,7 +1090,7 @@ int T_flip_pro( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<i
 	tx.bc = L3;
 	
 	
-	// triangle 2;
+	// Triangle 2;
 	tx2.a = tri.b;
 	tx2.b = tri.c;
 	tx2.c = D;
@@ -1104,7 +1105,7 @@ int T_flip_pro( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<i
 	t2 = tx2;
 	tri = tx;
 
-	// change knock on triangle labels.
+	// change knock on Triangle labels.
 	if( L3 >= 0 ){
 	  Triad &t3 = triads[L3];
 	  if( t3.ab == T2 ) t3.ab = t;
@@ -1176,7 +1177,7 @@ int Cline_Renka_test(float &Ax, float &Ay,
 
 
 
-// same again but with set of triangle ids to be iterated over.
+// same again but with set of Triangle ids to be iterated over.
 
 
 int T_flip_pro_idx( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<int> &slump, 
@@ -1276,7 +1277,7 @@ int T_flip_pro_idx( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vect
 	tx.bc = L3;
 	
 	
-	// triangle 2;
+	// Triangle 2;
 	tx2.a = tri.a;
 	tx2.b = tri.c;
 	tx2.c = D;
@@ -1292,7 +1293,7 @@ int T_flip_pro_idx( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vect
 	tri = tx;
 	flipped = 1;
 
-	// change knock on triangle labels.
+	// change knock on Triangle labels.
 	if( L3 >= 0 ){
 	  Triad &t3 = triads[L3];
 	  if( t3.ab == T2 ) t3.ab = t;
@@ -1385,7 +1386,7 @@ int T_flip_pro_idx( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vect
 	tx.bc = L3;
 	
 	
-	// triangle 2;
+	// Triangle 2;
 	tx2.a = tri.c;
 	tx2.b = tri.b;
 	tx2.c = D;
@@ -1402,7 +1403,7 @@ int T_flip_pro_idx( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vect
 	tri = tx;
 	flipped = 1;
 
-	// change knock on triangle labels.
+	// change knock on Triangle labels.
 	if( L3 >= 0 ){
 	  Triad &t3 = triads[L3];
 	  if( t3.ab == T2 ) t3.ab = t;
@@ -1496,7 +1497,7 @@ int T_flip_pro_idx( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vect
 	tx.bc = L3;
 	
 	
-	// triangle 2;
+	// Triangle 2;
 	tx2.a = tri.b;
 	tx2.b = tri.c;
 	tx2.c = D;
@@ -1514,7 +1515,7 @@ int T_flip_pro_idx( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vect
 	t2 = tx2;
 	tri = tx;
 	
-	// change knock on triangle labels.
+	// change knock on Triangle labels.
 	if( L3 >= 0 ){
 	  Triad &t3 = triads[L3];
 	  if( t3.ab == T2 ) t3.ab = t;
@@ -1561,7 +1562,7 @@ int T_flip_pro_idx( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vect
 }
 
 /* test the seed configuration to see if the center 
-   of the circum circle lies inside the seed triangle.
+   of the circum circle lies inside the seed Triangle.
  
    if not issue a warning.
 */
@@ -1723,7 +1724,7 @@ int T_flip_edge( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<
 	tx.bc = L3;
 	
 	
-	// triangle 2;
+	// Triangle 2;
 	tx2.a = tri.a;
 	tx2.b = tri.c;
 	tx2.c = D;
@@ -1740,7 +1741,7 @@ int T_flip_edge( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<
 	tri = tx;
 	flipped = 1;
 
-	// change knock on triangle labels.
+	// change knock on Triangle labels.
 	if( L3 >= 0 ){
 	  Triad &t3 = triads[L3];
 	  if( t3.ab == T2 ) t3.ab = t;
@@ -1834,7 +1835,7 @@ int T_flip_edge( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<
 	tx.bc = L3;
 	
 	
-	// triangle 2;
+	// Triangle 2;
 	tx2.a = tri.c;
 	tx2.b = tri.b;
 	tx2.c = D;
@@ -1851,7 +1852,7 @@ int T_flip_edge( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<
 	tri = tx;
 	flipped = 1;
 
-	// change knock on triangle labels.
+	// change knock on Triangle labels.
 	if( L3 >= 0 ){
 	  Triad &t3 = triads[L3];
 	  if( t3.ab == T2 ) t3.ab = t;
@@ -1946,7 +1947,7 @@ int T_flip_edge( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<
 	tx.bc = L3;
 	
 	
-	// triangle 2;
+	// Triangle 2;
 	tx2.a = tri.b;
 	tx2.b = tri.c;
 	tx2.c = D;
@@ -1961,7 +1962,7 @@ int T_flip_edge( std::vector<Shx> &pts, std::vector<Triad> &triads, std::vector<
 	t2 = tx2;
 	tri = tx;
 
-	// change knock on triangle labels.
+	// change knock on Triangle labels.
 	if( L3 >= 0 ){
 	  Triad &t3 = triads[L3];
 	  if( t3.ab == T2 ) t3.ab = t;

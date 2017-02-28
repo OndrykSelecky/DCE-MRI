@@ -4,13 +4,15 @@
 
 typedef std::vector<std::vector<cv::Point2f>> features;
 
-struct triangle
+struct Triangle
 {
-	cv::Point2f a;
-	cv::Point2f b;
-	cv::Point2f c;
+	//id-s of points in features vector
+	int a;
+	int b;
+	int c;
 
-	std::vector<cv::Point2f> detected_points;
+	//coordinates of these points (copied)
+	std::vector<cv::Point2f> point_coordinates;
 };
 
 

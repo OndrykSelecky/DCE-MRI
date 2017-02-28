@@ -33,7 +33,7 @@
 struct Triad
 {
   int a,b, c;
-  int ab, bc, ac;  // adjacent edges index to neighbouring triangle.
+  int ab, bc, ac;  // adjacent edges index to neighbouring Triangle.
   float ro, R,C;
   //std::set<int> idx;
   Triad() {};
@@ -62,7 +62,7 @@ struct Triad
 
 
 /* point structure for s_hull only.
-   has to keep track of triangle ids as hull evolves.
+   has to keep track of Triangle ids as hull evolves.
 
 
 */
