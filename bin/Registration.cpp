@@ -7,57 +7,15 @@
 #include <fstream>
 #include <cmath>
 
-//sequence_features detect_features(const MRISequence& sequence)
-//{
-//	auto image_count = sequence.image_count();
-//	if (image_count < 2) throw std::invalid_argument("number of images (" + std::to_string(image_count) + ") is too small\n");
-//	
-//	double sequence_contrast = 255.0*sequence.get_contrast();
-//
-//	sequence_features detected_features;
-//	
-//	std::vector<cv::Point2f> prev_feature_points;
-//
-//	cv::Mat prev_img;
-//	sequence[0].convertTo(prev_img, CV_8U, sequence_contrast);
-//	
-//	int maxCorners = 150;
-//	double qualityLevel = 0.001;
-//	int minDistance = 3;
-//
-//	cv::goodFeaturesToTrack(prev_img, prev_feature_points, maxCorners, qualityLevel, minDistance, cv::noArray());
-//
-//	detected_features.push_back(prev_feature_points);
-//
-//	for (std::vector<cv::Mat>::const_iterator it = sequence.data().begin() + 1; it != sequence.data().end(); ++it)
-//	{
-//		cv::Mat next_img;
-//		it->convertTo(next_img, CV_8U, sequence_contrast);
-//
-//		std::vector< cv::Point2f > next_feature_points;
-//		std::vector<unsigned char> status;
-//		std::vector<float> error;
-//		
-//		cv::calcOpticalFlowPyrLK(prev_img, next_img, prev_feature_points, next_feature_points, status, error);
-//
-//		detected_features.push_back(next_feature_points);
-//
-//		prev_feature_points = next_feature_points;
-//		prev_img = next_img;
-//
-//	}
-//		
-//	return detected_features;
-//}
 
-feat detect_features_backwards(const MRISequence& sequence, double max_difference, int maxCorners, double qualityLevel, int minDistance)
+features detect_features(const MRISequence& sequence, double max_difference, int maxCorners, double qualityLevel, int minDistance)
 {
 	auto image_count = sequence.image_count();
 	if (image_count < 2) throw std::invalid_argument("number of images (" + std::to_string(image_count) + ") is too small\n");
 
 	double sequence_contrast = 255.0*sequence.get_contrast();
 
-	feat detected_features_flow;
+	features detected_features_flow;
 	std::vector<std::vector<unsigned char>> detected_features_status;
 	std::vector<cv::Point2f> prev_feature_points;
 	
@@ -65,6 +23,7 @@ feat detect_features_backwards(const MRISequence& sequence, double max_differenc
 	sequence[0].convertTo(prev_img, CV_8U, sequence_contrast);
 	
 
+	// Find features to track
 	cv::goodFeaturesToTrack(prev_img, prev_feature_points, maxCorners, qualityLevel, minDistance, cv::noArray());
 
 
@@ -73,6 +32,7 @@ feat detect_features_backwards(const MRISequence& sequence, double max_differenc
 	detected_features_status.push_back(std::vector<unsigned char>(features_count, 1));
 	
 
+	// Track features throughout the sequence
 	for (std::vector<cv::Mat>::const_iterator it = sequence.data().begin() + 1; it != sequence.data().end(); ++it)
 	{
 		cv::Mat next_img;
@@ -91,10 +51,11 @@ feat detect_features_backwards(const MRISequence& sequence, double max_differenc
 		prev_img = next_img;
 	}
 
-
-
+	
+	
 	std::vector<unsigned char> valid_features(features_count, 1);
 
+	//Find, which features are valid
 	for (auto i = 1; i < image_count; i++)
 	{
 		for (auto j = 0; j < features_count; j++)
@@ -117,16 +78,14 @@ feat detect_features_backwards(const MRISequence& sequence, double max_differenc
 	for (int i = 0; i < 30; i++) std::cout << mdiff[i] << " ";*/
 
 	
-	int good_features_count = 0;
-	for (const auto& feature : valid_features)
-	{
-		if (feature == 1) good_features_count++;
-	}
+	// find how many features are valid
+	int good_features_count = std::count(valid_features.begin(), valid_features.end(), 1);
 	std::cout << "prev: " << features_count << ", now:" << good_features_count << "\n";
 
 
-	feat final_features;
+	features final_features;
 
+	// Discard non-valid features
 	for (int i = 0; i < image_count; i++)
 	{		
 		std::vector<cv::Point2f> feature_vector;		
@@ -146,18 +105,14 @@ feat detect_features_backwards(const MRISequence& sequence, double max_differenc
 	return final_features;
 }
 
-void show_features(MRISequence& sequence, const feat& features)
+void show_features(MRISequence& sequence, const features& features)
 {
 	if (sequence.image_count() != features.size() || sequence.image_count() < 1) throw std::out_of_range("Sequence and features must both have equal, non-zero size");
 
 	MRISequence feature_sequence;
 	feature_sequence.set_contrast(sequence.get_contrast());
 
-	/*cv::Mat dst;
-	sequence[0].copyTo(dst);
-	feature_sequence.add_image(dst);
-	int max_diff = 2;
-*/
+
 	for (auto i = 0; i < sequence.image_count(); i++)
 	{
 		cv::Mat img;
@@ -167,16 +122,16 @@ void show_features(MRISequence& sequence, const feat& features)
 		{					
 				circle(img, features[i][j], 4, cv::Scalar(255, 255, 255), -1, 8, 0);
 		}
-
 		
 		feature_sequence.add_image(img);		
 	}
 
 	sequence = std::move(feature_sequence);
 	sequence.show("Features Detected");
+
 }
 
-MRISequence warp_sequence(const MRISequence& sequence, const feat& features)
+MRISequence warp_sequence(const MRISequence& sequence, const features& features)
 {
 	auto image_count = sequence.image_count();
 	if (image_count < 2) throw std::invalid_argument("number of images (" + std::to_string(image_count) + ") is too small\n");
@@ -234,7 +189,7 @@ void registration(const std::string& folder, int sequence_id)
 	sequence->show("Sequence");
 	
 
-	feat features = detect_features_backwards(*sequence);
+	features features = detect_features(*sequence);
 	MRISequence feature_sequence(*sequence);
 	show_features(feature_sequence, features);
 
@@ -254,6 +209,8 @@ void registration(const std::string& folder, int sequence_id)
 	cv::createTrackbar("Lower", "Edges", &lower, 300, on_trackbar2);
 	cv::createTrackbar("Upper", "Edges", &upper, 300, on_trackbar2);
 	cv::waitKey(0);
+
+	
 
 }
 
