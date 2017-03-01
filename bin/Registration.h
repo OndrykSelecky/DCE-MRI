@@ -6,7 +6,7 @@
 #include "Util.h"
 
 
-features detect_features(const MRISequence& sequence, double max_difference = 5.0f, int maxCorners = 500, double qualityLevel = 0.001, int minDistance = 7);
+features detect_features(const MRISequence& sequence, double max_difference = 5.0f, int maxCorners = 500, double qualityLevel = 0.001, int minDistance = 10);
 
 void show_features(MRISequence& sequence, const features& features);
 

@@ -37,6 +37,7 @@ features detect_features(const MRISequence& sequence, double max_difference, int
 	std::vector<std::vector<unsigned char>> detected_features_status;
 	std::vector<cv::Point2f> prev_feature_points;
 	
+
 	cv::Mat prev_img;
 	sequence[0].convertTo(prev_img, CV_8U, sequence_contrast);
 	
@@ -230,6 +231,7 @@ void show_triangles(MRISequence& sequence, const std::vector<Triangle>& triangle
 }
 
 
+
 MRISequence warp_sequence(const MRISequence& sequence, const features& features)
 {
 	auto image_count = sequence.image_count();
@@ -254,15 +256,19 @@ MRISequence warp_sequence(const MRISequence& sequence, const features& features)
 	return transformed_sequence;
 }
 
+
 MRISequence warp_sequence(const MRISequence& sequence, const features& features, const std::vector<Triangle>& triangles)
 {
+	
+	std::vector<std::vector<int>> triangle_id(sequence[0].size().width, std::vector<int>(sequence[0].size().height,0));
 
-	std::vector<std::vector<int>> triangle_id(sequence[0].size().width, std::vector<int>(sequence[0].size().height,-1));
-
+	//for each pixel in matrix, compute id of triangle in which it lies and store it in 2d vector triangle_id of same size as image
 	for (int t_id = 0; t_id < triangles.size(); t_id++)
 	{
+				
+				//create bounding rect around triangle
 		cv::Rect bounding_rect = cv::boundingRect(triangles[t_id].point_coordinates);
-
+		
 		for (int i = bounding_rect.x; i < bounding_rect.x + bounding_rect.width; i++)
 		{
 			for (int j = bounding_rect.y; j < bounding_rect.y + bounding_rect.height; j++)
@@ -273,69 +279,80 @@ MRISequence warp_sequence(const MRISequence& sequence, const features& features,
 		}		
 	}
 
-	//test na dvoch obrazkoch
 
-	std::vector<cv::Mat> matrices;
+	std::vector<std::vector<cv::Point2f>> triangle_points(triangles.size());
 
-	for (int i = 0; i < triangles.size(); i++)
-	{
-		std::vector<cv::Point2f> dst_points;
-		dst_points.push_back(features[20][triangles[i].a]);
-		dst_points.push_back(features[20][triangles[i].b]);
-		dst_points.push_back(features[20][triangles[i].c]);
-
-		cv::Mat transformation_matrix = cv::getAffineTransform(triangles[i].point_coordinates, dst_points);
-		matrices.push_back(transformation_matrix);
-	}
-	
-	/*cv::Mat transformed(sequence[0].size(), sequence[0].type());
-
+	//divide each points into groups, one group is assigned with one triangle
 	for (int i = 0; i < sequence[0].size().width; i++)
 	{
 		for (int j = 0; j < sequence[0].size().height; j++)
 		{
-			transformed[i][j]=
-		}
-	}*/
-	
-	cv::Mat matrix = cv::Mat::zeros(3, 3, matrices[triangle_id[1][1]].type());
-	std::cout << matrices[triangle_id[1][1]];
-	std::cout << matrix;
-
-	for (int i = 0; i < 3; i++)
-	{
-		for (int j = 0; j < 2; j++)
-		{
-			matrix.at<double>(j, i) = matrices[triangle_id[1][1]].at<double>(j, i);
+			triangle_points[triangle_id[i][j]].push_back(cv::Point2f(i, j));			
 		}
 	}
-	matrix.at<double>(0, 2) = 0;
-	matrix.at<double>(1, 2) = 0;
-	matrix.at<double>(2, 2) = 1;
 
-	std::cout << matrix;
+	MRISequenceHorizontal transformed_sequence;
+	transformed_sequence.set_contrast(sequence.get_contrast());
+	cv::Mat sequence_0;
+	sequence[0].copyTo(sequence_0);
+	transformed_sequence.add_image(sequence_0);
 
-	std::vector<cv::Point2f> in;
-	in.push_back(cv::Point2f(1, 1));
-	std::vector<cv::Point2f> out;
-	cv::perspectiveTransform(in, out, matrix);
+	for (int sequence_id = 1; sequence_id < sequence.image_count(); sequence_id++)
+	{
+		//for each triangle create 3x3 transformation matrix
 
-	std::cout << in[0] << " " << out[0] << "\n";
+		std::vector<cv::Mat> matrices;
 
-	return MRISequence();
+		cv::Mat row = cv::Mat::zeros(1, 3, CV_64F);
+		row.at<double>(0, 2) = 1;
+
+		for (int i = 0; i < triangles.size(); i++)
+		{
+			std::vector<cv::Point2f> dst_points;
+			dst_points.push_back(features[sequence_id][triangles[i].a]);
+			dst_points.push_back(features[sequence_id][triangles[i].b]);
+			dst_points.push_back(features[sequence_id][triangles[i].c]);
+
+			cv::Mat transformation_matrix = cv::getAffineTransform(triangles[i].point_coordinates, dst_points);
+
+			transformation_matrix.push_back(row);
+			matrices.push_back(transformation_matrix);
+		}
+
+
+
+		//perform transformation
+		cv::Mat map_x(sequence[0].size(), sequence[0].type());
+		cv::Mat map_y(sequence[0].size(), sequence[0].type());
+
+		for (int t_id = 0; t_id < triangle_points.size(); t_id++)
+		{
+			cv::Mat matrix = matrices[t_id];
+
+			if (triangle_points[t_id].size() == 0) continue;
+
+			std::vector<cv::Point2f> out(triangle_points[t_id].size());
+			cv::perspectiveTransform(triangle_points[t_id], out, matrix);
+
+			for (int i = 0; i < triangle_points[t_id].size(); i++)
+			{
+				map_x.at<float>(triangle_points[t_id][i]) = out[i].x;
+				map_y.at<float>(triangle_points[t_id][i]) = out[i].y;
+			}
+
+		}
+
+		cv::Mat dst(sequence[0].size(), sequence[0].type());
+
+		cv::remap(sequence[sequence_id], dst, map_x, map_y, CV_INTER_LINEAR);
+		
+		transformed_sequence.add_image(dst);
+	}
+	
+
+	return transformed_sequence;
 }
 
-cv::Mat img;
-int lower, upper;
-
-void on_trackbar2(int, void*)
-{
-	cv::Mat dst;
-	cv::Canny(img, dst, lower, upper, 3, true);
-	cv::namedWindow("Edges", cv::WINDOW_NORMAL);
-	imshow("Edges", dst);
-
-}
 
 void registration(const std::string& folder, int sequence_id)
 {
@@ -369,22 +386,12 @@ void registration(const std::string& folder, int sequence_id)
 	MRISequence triangle_sequence(*sequence);
 	show_triangles(triangle_sequence, triangles, features);
 
-	warp_sequence(*sequence, features, triangles);
+
+	MRISequence triangle_transformed_sequence = warp_sequence(*sequence, features, triangles);
+	triangle_transformed_sequence.show("Triangulation warped sequence");
 
 	return;
 
-	//canny
-	transformed_sequence[0].convertTo(img, CV_8UC1, transformed_sequence.get_contrast()*255.0);
-	cv::blur(img, img, cv::Size(3, 3));
-	cv::namedWindow("Edges", cv::WINDOW_NORMAL);
-	imshow("Edges", img);
-	lower = 0;
-	upper = 0;
-	cv::createTrackbar("Lower", "Edges", &lower, 300, on_trackbar2);
-	cv::createTrackbar("Upper", "Edges", &upper, 300, on_trackbar2);
-	cv::waitKey(0);
-
-	
 
 }
 

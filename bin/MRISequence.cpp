@@ -122,7 +122,7 @@ void MRISequence::show(std::string window_name)
 
 void MRISequence::set_contrast()
 {	
-	m_contrast = 0;
+	m_contrast = 1000000;
 
 	for (const auto& img : m_images)
 	{
@@ -130,7 +130,7 @@ void MRISequence::set_contrast()
 		cv::minMaxLoc(img, &min, &max);
 		double contrast = max - min;
 		
-		if (contrast > m_contrast)
+		if (contrast < m_contrast)
 			m_contrast = contrast;
 	}
 
