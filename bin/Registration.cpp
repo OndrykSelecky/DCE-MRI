@@ -262,6 +262,7 @@ MRISequence warp_sequence(const MRISequence& sequence, const features& features,
 	for (int t_id = 0; t_id < triangles.size(); t_id++)
 	{
 		cv::Rect bounding_rect = cv::boundingRect(triangles[t_id].point_coordinates);
+
 		for (int i = bounding_rect.x; i < bounding_rect.x + bounding_rect.width; i++)
 		{
 			for (int j = bounding_rect.y; j < bounding_rect.y + bounding_rect.height; j++)
@@ -274,7 +275,52 @@ MRISequence warp_sequence(const MRISequence& sequence, const features& features,
 
 	//test na dvoch obrazkoch
 
+	std::vector<cv::Mat> matrices;
 
+	for (int i = 0; i < triangles.size(); i++)
+	{
+		std::vector<cv::Point2f> dst_points;
+		dst_points.push_back(features[20][triangles[i].a]);
+		dst_points.push_back(features[20][triangles[i].b]);
+		dst_points.push_back(features[20][triangles[i].c]);
+
+		cv::Mat transformation_matrix = cv::getAffineTransform(triangles[i].point_coordinates, dst_points);
+		matrices.push_back(transformation_matrix);
+	}
+	
+	/*cv::Mat transformed(sequence[0].size(), sequence[0].type());
+
+	for (int i = 0; i < sequence[0].size().width; i++)
+	{
+		for (int j = 0; j < sequence[0].size().height; j++)
+		{
+			transformed[i][j]=
+		}
+	}*/
+	
+	cv::Mat matrix = cv::Mat::zeros(3, 3, matrices[triangle_id[1][1]].type());
+	std::cout << matrices[triangle_id[1][1]];
+	std::cout << matrix;
+
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			matrix.at<double>(j, i) = matrices[triangle_id[1][1]].at<double>(j, i);
+		}
+	}
+	matrix.at<double>(0, 2) = 0;
+	matrix.at<double>(1, 2) = 0;
+	matrix.at<double>(2, 2) = 1;
+
+	std::cout << matrix;
+
+	std::vector<cv::Point2f> in;
+	in.push_back(cv::Point2f(1, 1));
+	std::vector<cv::Point2f> out;
+	cv::perspectiveTransform(in, out, matrix);
+
+	std::cout << in[0] << " " << out[0] << "\n";
 
 	return MRISequence();
 }

@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 	std::string folder16 = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC16/";
 	std::string folder18 = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC16/";
 
-	registration(folder6, 54);
+	registration(folder10, 54);
 	
 
 	return 0;
