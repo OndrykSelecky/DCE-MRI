@@ -299,7 +299,7 @@ MRISequence warp_sequence(const MRISequence& sequence, const features& features,
 
 	for (int sequence_id = 1; sequence_id < sequence.image_count(); sequence_id++)
 	{
-		//for each triangle create 3x3 transformation matrix
+		//for each triangle compute 3x3 affine transformation matrix
 
 		std::vector<cv::Mat> matrices;
 
@@ -362,8 +362,13 @@ void registration(const std::string& folder, int sequence_id)
 	
 	auto sequence = (*session)[54];	
 
+
+	/*std::shared_ptr<MRISequence> sequence(new MRISequence());
+	sequence->set_folder_name("D:/Dokumenty/Projects/QIN Breast DCE-MRI/Sequence1");*/
+
 	try {
 		sequence->read(*session);
+		//sequence->read();
 	}
 	catch (std::invalid_argument& e)
 	{
@@ -377,7 +382,7 @@ void registration(const std::string& folder, int sequence_id)
 	features features = detect_features(*sequence);
 	MRISequence feature_sequence(*sequence);
 	show_features(feature_sequence, features);
-
+	
 
 	MRISequence transformed_sequence = warp_sequence(*sequence, features);
 	transformed_sequence.show("Warped sequence");
@@ -390,9 +395,11 @@ void registration(const std::string& folder, int sequence_id)
 	MRISequence triangle_transformed_sequence = warp_sequence(*sequence, features, triangles);
 	triangle_transformed_sequence.show("Triangulation warped sequence");
 
-	return;
+	//triangle_transformed_sequence.write("output.txt");
+	//sequence->write("output_orig.txt");
 
-
+	triangle_transformed_sequence.write("D:/Dokumenty/Projects/QIN Breast DCE-MRI/Sequence1", CV_16UC1);
+	
 }
 
 

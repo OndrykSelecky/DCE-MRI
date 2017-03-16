@@ -37,6 +37,9 @@ public:
 	//Read vertical sequence
 	void read();
 
+	void write_txt(const std::string& file_name);
+
+	void write(const std::string& folder, int image_type);
 
 	//Show sequence
 	void show(std::string window_name = std::string(""));
