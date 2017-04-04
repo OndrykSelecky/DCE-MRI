@@ -130,7 +130,7 @@ void MRISequence::write_txt(const std::string & file_name)
 	}
 }
 
-void MRISequence::write(const std::string & folder, int image_type)
+void MRISequence::write(const std::string & folder, int image_type, bool adjust_contrast)
 {
 	int depth;
 	if (image_type == CV_16UC1) depth = 16;
@@ -142,13 +142,20 @@ void MRISequence::write(const std::string & folder, int image_type)
 	std::vector<int> compression_params;
 	compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
 	compression_params.push_back(0);
-
+	std::cout << m_contrast;
 	int image_number = 0;
 	for (auto i= 0; i< m_images.size(); i++)
 	{
 		cv::Mat dst(m_images[i].rows, m_images[i].cols, image_type);
 		
-		m_images[i].convertTo(dst, image_type, depth*m_contrast);
+		if (adjust_contrast)
+		{
+			m_images[i].convertTo(dst, image_type, depth*m_contrast);
+		}
+		else
+		{
+			m_images[i].convertTo(dst, image_type, depth);
+		}
 
 		std::stringstream image_name_stream;
 		image_name_stream << std::setw(6) << std::setfill('0') << image_number++;
@@ -195,8 +202,9 @@ void MRISequence::set_contrast()
 		if (contrast > m_contrast)
 			m_contrast = contrast;
 	}
-
+	//std::cout << m_contrast;
 	m_contrast = 1.0 / m_contrast;
+	
 }
 
 void MRISequence::on_trackbar(int, void* p)

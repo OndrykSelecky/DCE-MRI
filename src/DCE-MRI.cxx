@@ -1,6 +1,38 @@
-
-
 #include "Registration.h"
+#include "MRISequenceHorizontal.h"
+#include "MRISessionHorizontal.h"
+#include "Analysis.h"
+
+
+std::shared_ptr<MRISequence> read_sequence(const std::string& folder, int sequence_id)
+{
+	std::shared_ptr<MRISession> session(new MRISessionHorizontal(folder));
+	session->read();
+
+	std::shared_ptr<MRISequenceHorizontal> sequence = std::dynamic_pointer_cast<MRISequenceHorizontal>((*session)[sequence_id]);
+
+
+	try {
+		sequence->read(*(std::dynamic_pointer_cast<MRISessionHorizontal>(session)));
+		//sequence->read();
+	}
+	catch (std::invalid_argument& e)
+	{
+		std::cout << e.what();
+		throw std::invalid_argument("Can't read sequence");
+	}
+
+	return sequence;
+}
+
+std::shared_ptr<MRISequence> read_sequence(const std::string& folder)
+{
+	std::shared_ptr<MRISequence> sequence(std::make_shared<MRISequence>(folder));
+	sequence->read();
+	return sequence;
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -16,8 +48,21 @@ int main(int argc, char** argv)
 	std::string folder16 = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC16/";
 	std::string folder18 = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC16/";
 
-	registration(folder1, 54);
+	std::string folderorig = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/Sequence_orig";
+
+	auto folder = folder1;
+	int sequence_id = 54;
+
+
+	auto sequence = read_sequence(folderorig);
 	
+	auto triangle_sequence = registration(*sequence, OPTIMAL_TRIANGULATION);
+
+	auto homography_sequence = registration(*sequence, HOMOGRAPHY);
+	
+	std::vector<std::shared_ptr<MRISequence>> sequences{ sequence, triangle_sequence, homography_sequence };
+
+	registration_correlation(sequences);
 
 	return 0;
 }

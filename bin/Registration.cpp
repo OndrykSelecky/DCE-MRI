@@ -139,7 +139,7 @@ void show_features(MRISequence& sequence, const features& features)
 
 		for (auto j = 0; j < features[i].size(); j++)
 		{					
-				circle(img, features[i][j], 4, cv::Scalar(255, 255, 255), -1, 8, 0);
+				circle(img, features[i][j], 4, cv::Scalar(255, 0, 255), -1, 8, 0);
 		}
 		
 		feature_sequence.add_image(img);		
@@ -266,7 +266,7 @@ MRISequence warp_sequence(const MRISequence& sequence, const features& features,
 	for (int t_id = 0; t_id < triangles.size(); t_id++)
 	{
 				
-				//create bounding rect around triangle
+		//create bounding rect around triangle
 		cv::Rect bounding_rect = cv::boundingRect(triangles[t_id].point_coordinates);
 		
 		for (int i = bounding_rect.x; i < bounding_rect.x + bounding_rect.width; i++)
@@ -354,163 +354,41 @@ MRISequence warp_sequence(const MRISequence& sequence, const features& features,
 }
 
 
-void registration(const std::string& folder, int sequence_id)
+std::shared_ptr<MRISequence> registration(MRISequence& sequence, const int method)
 {
 	
-	std::shared_ptr<MRISessionHorizontal> session(new MRISessionHorizontal(folder));
-	session->read();	
+	//std::reverse(sequence->data().begin(), sequence->data().end());
+	//sequence.show("Sequence");
 	
-	auto sequence = (*session)[54];	
 
-
-	/*std::shared_ptr<MRISequence> sequence(new MRISequence());
-	sequence->set_folder_name("D:/Dokumenty/Projects/QIN Breast DCE-MRI/Sequence1");*/
-
-	try {
-		sequence->read(*session);
-		//sequence->read();
+	features features = detect_features(sequence);
+	MRISequence feature_sequence(sequence);
+	//show_features(feature_sequence, features);
+	
+	if (method == HOMOGRAPHY)
+	{
+		MRISequence transformed_sequence = warp_sequence(sequence, features);
+		//transformed_sequence.show("Warped sequence");
+		return std::make_shared<MRISequence>(transformed_sequence);
 	}
-	catch (std::invalid_argument& e)
+	else if (method == OPTIMAL_TRIANGULATION)
 	{
-		std::cout << e.what();
-		return;
-	}	
-	std::reverse(sequence->data().begin(), sequence->data().end());
-	sequence->show("Sequence");
-	
+		auto triangles = get_triangles(features, sequence);
+		MRISequence triangle_sequence(sequence);
+		//show_triangles(triangle_sequence, triangles, features);
 
-	features features = detect_features(*sequence);
-	MRISequence feature_sequence(*sequence);
-	show_features(feature_sequence, features);
-	
+		MRISequence transformed_sequence = warp_sequence(sequence, features, triangles);
+		//transformed_sequence.show("Triangulation warped sequence");
 
-	MRISequence transformed_sequence = warp_sequence(*sequence, features);
-	transformed_sequence.show("Warped sequence");
-	
-	auto triangles = get_triangles(features, *sequence);
-	MRISequence triangle_sequence(*sequence);
-	show_triangles(triangle_sequence, triangles, features);
+		//triangle_transformed_sequence.write("D:/Dokumenty/Projects/QIN Breast DCE-MRI/Sequence1", CV_16UC1,false);
 
-
-	MRISequence triangle_transformed_sequence = warp_sequence(*sequence, features, triangles);
-	triangle_transformed_sequence.show("Triangulation warped sequence");
-
-	//triangle_transformed_sequence.write("output.txt");
-	//sequence->write("output_orig.txt");
-
-	triangle_transformed_sequence.write("D:/Dokumenty/Projects/QIN Breast DCE-MRI/Sequence1", CV_16UC1);
-	
-}
-
-
-
-/*
-void motion_test()
-{
-	std::string folder = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC14/1.3.6.1.4.1.14519.5.2.1.2103.7010.297016782834828170309889288895";
-
-	MRISession session(folder);
-
-	session.read();
-
-
-	MRISequence sequence;
-	sequence.read_horizontal(session, "000055.dcm");
-	
-
-	sequence.show();
-
-
-	MRISequence feature_sequence;	
-	
-		
-	std::ofstream output_stream("pairs.txt");
-	
-	
-	cv::Mat prev_img;
-	sequence[0].convertTo(prev_img, CV_8U, 255.0);
-	
-	std::vector< cv::Point2f > prev_corners;
-	int maxCorners = 150;
-	double qualityLevel = 0.0001;
-
-	cv::goodFeaturesToTrack(prev_img, prev_corners, maxCorners, qualityLevel, 10, cv::noArray(), 3, false, 0.04);
-
-	for (int i = 1; i < sequence.image_count(); i++)
+		return std::make_shared<MRISequence>(transformed_sequence);
+	}
+	else
 	{
-				//, cv::Rect(180, 50, 105, 125)
-		
-		cv::Mat next_img;
-		sequence[i].convertTo(next_img, CV_8U, 255.0);
-		
-
-		std::vector< cv::Point2f > next_corners;
-		std::vector<unsigned char> status;
-		std::vector<float> error;
-		cv::TermCriteria termcrit(cv::TermCriteria::COUNT | cv::TermCriteria::EPS, 20, 0.03);
-		cv::Size winSize(31, 31);
-
-		cv::calcOpticalFlowPyrLK(prev_img, next_img, prev_corners, next_corners, status, error, winSize, 3, termcrit, 0, 0.001);
-
-		
-		//std::vector<std::pair<cv::Point2f, cv::Point2f>> pairs;
-		std::vector< cv::Point2f > prev_t_corners;
-		std::vector<cv::Point2f> next_t_corners;
-
-		for (int j = 0; j < prev_corners.size(); j++)
-		{
-			double dx = std::abs(prev_corners[j].x - next_corners[j].x);
-			double dy = std::abs(prev_corners[j].y - next_corners[j].y);
-			
-			if ((status[j] == 1) && dx < 2 && dy < 2)
-			{
-				prev_t_corners.push_back(prev_corners[j]);
-				next_t_corners.push_back(next_corners[j]);
-			}
-		}
-		std::cout << prev_t_corners.size() << " ";
-
-		output_stream << "Images: " << 2 * i << ", " << 2 * i + 1 << "\n";
-			
-		cv::Mat next_circled, prev_circled;
-		prev_img.copyTo(prev_circled);
-		next_img.copyTo(next_circled);
-
-		for (size_t j = 0; j < prev_t_corners.size(); j++)
-		{
-			output_stream << "[" << prev_t_corners[j].x << ", " << prev_t_corners[j].y << "] -> [" <<
-				next_t_corners[j].x << ", " << next_t_corners[j].y << "]\n";
-
-			circle(prev_circled, prev_t_corners[j], 4, cv::Scalar(255, 255, 0), -1, 8, 0);
-			circle(next_circled, next_t_corners[j], 4, cv::Scalar(255, 255, 0), -1, 8, 0);
-		}
-		
-		output_stream << "\n\n";
-
-
-		feature_sequence.add_image(prev_circled);
-		feature_sequence.add_image(next_circled);
-		
-
-		//transformation
-		cv::Mat h = cv::findHomography(prev_t_corners, next_t_corners);
-		cv::Mat dst;
-		cv::warpPerspective(next_img, dst, h, next_img.size());
-		std::cout << i << std::endl;
-		MRISequence transform_sequence;
-		transform_sequence.add_image(prev_img);
-		transform_sequence.add_image(dst);
-		transform_sequence.add_image(next_img);
-		//transform_sequence.show();
-
-		prev_corners = next_corners;
-		prev_img = next_img;
-
+		throw std::invalid_argument("Error: Method in function \"registration\" should be OPTIMAL_TRIANGULATION or HOMOGRAPHY\n");
 	}
 	
-	output_stream.close();
 
-	feature_sequence.show();
-	
 }
-*/
+

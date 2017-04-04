@@ -20,6 +20,7 @@ public:
 
 	MRISequence(MRISequence&& other);
 
+
 	virtual ~MRISequence(){};
 	
 	//Assignment operator
@@ -39,7 +40,7 @@ public:
 
 	void write_txt(const std::string& file_name);
 
-	void write(const std::string& folder, int image_type);
+	void write(const std::string& folder, int image_type, bool adjust_contrast = false);
 
 	//Show sequence
 	void show(std::string window_name = std::string(""));
@@ -48,6 +49,7 @@ public:
 	std::vector<cv::Mat>& data() { return m_images; }
 
 	const std::vector<cv::Mat>& data() const { return m_images; }
+
 
 	//Number of images
 	size_t image_count() const { return m_images.size(); }

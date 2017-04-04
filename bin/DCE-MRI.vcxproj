@@ -324,6 +324,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Analysis.cpp" />
     <ClCompile Include="C:\Users\ondryk\Documents\Visual Studio 2015\Projects\DCE-MRI\src\DCE-MRI.cxx" />
     <ClCompile Include="MRISequence.cpp" />
     <ClCompile Include="MRISequenceHorizontal.cpp" />
@@ -341,6 +342,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Analysis.h" />
     <ClInclude Include="MRISequenceHorizontal.h" />
     <ClInclude Include="MRISession.h" />
     <ClInclude Include="MRISessionHorizontal.h" />
