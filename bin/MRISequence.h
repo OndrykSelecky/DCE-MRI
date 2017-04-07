@@ -14,14 +14,17 @@ public:
 	MRISequence();
 
 	MRISequence(const std::string& folder, int sequence_id = -1);
+
+	MRISequence(const std::string& folder, std::vector<std::string>& image_names, int sequence_id = -1);
 		
+	virtual ~MRISequence() {};
+
+
 	//Copy constructor
 	MRISequence(const MRISequence& other);
 
 	MRISequence(MRISequence&& other);
-
-
-	virtual ~MRISequence(){};
+		
 	
 	//Assignment operator
 	MRISequence& operator=(const MRISequence &other);
@@ -42,9 +45,11 @@ public:
 
 	void write(const std::string& folder, int image_type = CV_16UC1, bool adjust_contrast = false);
 
+
 	//Show sequence
 	void show(std::string window_name = std::string(""));
 	
+
 	//Access to whole vector
 	std::vector<cv::Mat>& data() { return m_images; }
 
@@ -85,6 +90,9 @@ public:
 	}
 
 protected:
+
+	std::vector<std::string> m_image_names;
+
 	//Vector of images
 	std::vector<cv::Mat> m_images;
 	
@@ -94,6 +102,8 @@ protected:
 	//Sequence folder path
 	std::string m_folder;
 	
+
+
 
 	//Trackbar variables
 	int m_trackbar_value;

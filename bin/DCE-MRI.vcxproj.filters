@@ -19,12 +19,6 @@
     <ClCompile Include="MRISession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MRISessionHorizontal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MRISequenceHorizontal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="s_hull_pro.cpp">
       <Filter>Source Files\s_hull</Filter>
     </ClCompile>
@@ -60,12 +54,6 @@
     <ClInclude Include="MRISession.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="MRISessionHorizontal.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MRISequenceHorizontal.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="s_hull_pro.h">
       <Filter>Source Files\s_hull</Filter>
     </ClInclude>
@@ -75,5 +63,9 @@
     <ClInclude Include="Analysis.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
 </Project>

@@ -410,7 +410,7 @@ void show_triangles(MRISequence& sequence, const std::vector<Triangle>& triangle
 }
 
 
-std::shared_ptr<MRISequence> registration(MRISequence& sequence, const int method, bool reverse, bool show)
+MRISequence registration(MRISequence& sequence, const int method, bool reverse, bool show)
 {
 	
 	if (reverse) std::reverse(sequence.data().begin(), sequence.data().end());
@@ -451,7 +451,7 @@ std::shared_ptr<MRISequence> registration(MRISequence& sequence, const int metho
 	}
 	
 	if (reverse) std::reverse(transformed_sequence.data().begin(), transformed_sequence.data().end());
-	return std::make_shared<MRISequence>(transformed_sequence);
+	return transformed_sequence;
 
 }
 

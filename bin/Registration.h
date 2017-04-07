@@ -37,7 +37,7 @@ void show_triangles(MRISequence& sequence, const std::vector<Triangle>& triangle
 
 
 //Main registration function
-std::shared_ptr<MRISequence> registration(MRISequence& sequence, const int method = OPTIMAL_TRIANGULATION, bool reverse = false, bool show = false);
+MRISequence registration(MRISequence& sequence, const int method = OPTIMAL_TRIANGULATION, bool reverse = false, bool show = false);
 
 
 

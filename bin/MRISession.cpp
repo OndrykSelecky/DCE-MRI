@@ -17,7 +17,47 @@
 
 void MRISession::read(bool new_read)
 {
-	m_sequences.clear();
+	read_sequence_folders(new_read);
+
+	read_image_names(new_read);
+}
+
+MRISequence MRISession::get_sequence(unsigned int sequence_number)
+{
+
+	if (sequence_number >= m_sequence_folders.size())
+	{
+		throw std::invalid_argument("Error: Sequence number is greater than number of sequences in session\n");
+	}
+
+	MRISequence sequence(m_folder + "/" + m_sequence_folders[sequence_number], m_image_names[sequence_number]);
+	sequence.read();
+
+	return sequence;
+}
+
+MRISequence MRISession::get_horizontal_sequence(unsigned int sequence_number)
+{
+	if (sequence_number >= m_image_names[0].size())
+	{
+		throw std::invalid_argument("Error: Sequence number is greater than number of sequences in session\n");
+	}
+
+	std::vector<std::string> file_names(m_image_names.size());
+
+	for (auto i = 0; i < m_image_names.size(); i++)
+	{
+		file_names[i] = m_sequence_folders[i] + "/" + m_image_names[i][sequence_number];
+	}
+
+	MRISequence sequence(m_folder, file_names);
+	sequence.read();
+
+	return sequence;
+}
+
+void MRISession::read_sequence_folders(bool new_read)
+{
 	
 	/*
 	set up input stream for reding ordered folder names
@@ -26,84 +66,90 @@ void MRISession::read(bool new_read)
 	sequence_input_stream.open(m_folder + "/" + "sequences.txt");
 
 	/*
-		if file was found, read folder names
+	if file was found, read folder names
 	*/
 	if (sequence_input_stream.is_open() && !new_read)
 	{
 		while (!sequence_input_stream.eof())
 		{
 			int sequence_id;
-			sequence_input_stream >> sequence_id;			
+			sequence_input_stream >> sequence_id;
 
 			std::string sequence_name;
 			std::getline(sequence_input_stream, sequence_name);
 			std::getline(sequence_input_stream, sequence_name);
 			if (sequence_name != "")
 			{
-				m_sequences.push_back(std::make_shared<MRISequence>(sequence_name, sequence_id));
+				m_sequence_folders.push_back(sequence_name);
 			}
 		}
 	}
 
 	//else find all subfolders and get id of sequence by opening first dicom file in each folder	
 	else
-	{		
-		std::vector<std::string> sequence_folders = get_folder_names(m_folder);
-		
-		for (const auto& folder : sequence_folders)
+	{
+		std::vector<std::string> subfolders = get_folder_names(m_folder);
+		std::vector<std::pair<int, std::string>> sequence_folders;
+
+		for (const auto& folder : subfolders)
 		{
 			std::string folder_path = m_folder + "/" + folder;
-			int id = find_sequence_id(folder_path);
+			std::string file_name = get_first_file_name(folder_path, ".dcm");
 
+			if (file_name == "")
+			{
+				continue;
+			}
+			
+			int id = find_id(folder_path + "/" + file_name, SEQUENCE_ENTRY_ID);
+			
 			if (id >= 0)
-			{				
-				m_sequences.push_back(std::make_shared<MRISequence>(folder_path, id));
+			{
+				sequence_folders.push_back(std::make_pair(id, folder));
 			}
 		}
 
-		std::sort(m_sequences.begin(), m_sequences.end(), MRISequence::compare_sequences);
+		std::sort(sequence_folders.begin(), sequence_folders.end());
 
 
+		for (const auto& folder : sequence_folders)
+		{
+			m_sequence_folders.push_back(folder.second);
+		}
+
+		//Write in file for quicker read
 		std::ofstream output_sequence_stream;
 		output_sequence_stream.open(m_folder + "/" + "sequences.txt");
-				
+
 		if (!output_sequence_stream.is_open())
 		{
-			throw std::exception(std::string("Error: Output file " + m_folder + "/" + "sequences.txt" + " couldn't be opened").c_str());
+			std::cout << "Error: Output file " + m_folder + "/" + "sequences.txt" + " couldn't be opened. Folder names were not written";
+			return;
 		}
 
-		for (const auto& sequence : m_sequences)
+		for (const auto& folder : sequence_folders)
 		{
 
-			output_sequence_stream << sequence->get_sequence_id() << "\n" << sequence->get_folder_name() << "\n";
+			output_sequence_stream << folder.first << "\n" << folder.second << "\n";
 		}
 
+	}
+}
+
+void MRISession::read_image_names(bool new_read)
+{
+	m_image_names.reserve(m_sequence_folders.size());
+
+	for (const auto& folder : m_sequence_folders)
+	{
+		m_image_names.push_back(get_dicom_file_names(m_folder + "/" + folder, new_read));
 	}
 
 }
 
-int MRISession::find_sequence_id(const std::string& sub_folder)
+int find_id(const std::string& file, const std::string& entry_id)
 {
 
-	/*
-	Find name of first dicom file in folder
-	*/
-	WIN32_FIND_DATA FindFileData;
-	HANDLE hFind;
-	std::string file_name = sub_folder + "/";
-	
-	hFind = FindFirstFile((sub_folder+"/*.dcm").c_str(), &FindFileData);
-	if (hFind == INVALID_HANDLE_VALUE)
-	{
-		return -1;
-	}
-	else
-	{
-		file_name += FindFileData.cFileName;
-		FindClose(hFind);
-	}
-	//std::string file_name = sub_folder + "/000000.dcm";							
-	
 
 	/*
 	Open image file with ITK
@@ -114,7 +160,7 @@ int MRISession::find_sequence_id(const std::string& sub_folder)
 
 	typedef itk::ImageFileReader< InputImageType > ReaderType;
 	ReaderType::Pointer reader = ReaderType::New();
-	reader->SetFileName(file_name);
+	reader->SetFileName(file);
 
 	typedef itk::GDCMImageIO           ImageIOType;
 	ImageIOType::Pointer gdcmImageIO = ImageIOType::New();
@@ -141,7 +187,7 @@ int MRISession::find_sequence_id(const std::string& sub_folder)
 	/*
 	Set entry id
 	*/
-	std::string entryId = "0020|0011";
+	std::string entryId = entry_id;
 	DictionaryType::ConstIterator tagItr = dictionary.Find(entryId);
 
 
@@ -158,7 +204,7 @@ int MRISession::find_sequence_id(const std::string& sub_folder)
 		{
 			try {
 
-				int id = std::stoi(entryvalue->GetMetaDataObjectValue());				
+				int id = std::stoi(entryvalue->GetMetaDataObjectValue());
 				return id;
 			}
 			catch (std::invalid_argument())
@@ -170,6 +216,74 @@ int MRISession::find_sequence_id(const std::string& sub_folder)
 	}
 
 	return -1;
-	
+
 }
 
+
+std::vector<std::string> get_dicom_file_names(const std::string & folder, bool new_read, bool output)
+{
+	std::vector<std::string> image_names;
+
+	std::ifstream image_input_stream;
+	image_input_stream.open(folder + "/" + "images.txt");
+
+
+	if (image_input_stream.is_open() && !new_read)
+	{
+		while (!image_input_stream.eof())
+		{
+			std::string image_name;
+			std::getline(image_input_stream, image_name);
+			if (image_name != "")
+			{
+				image_names.push_back(image_name);
+			}
+		}
+	}
+	else
+	{
+		auto file_names = get_file_names(folder, ".dcm");
+
+		std::vector<std::pair<int, std::string>> name_id_pairs;
+
+		for (const auto& image_name : file_names)
+		{
+			std::string image_path = folder + "/" + image_name;
+			
+
+			int id = find_id(image_path, IMAGE_ENTRY_ID);
+
+			if (id >= 0)
+			{
+				name_id_pairs.push_back(std::make_pair(id, image_name));
+			}
+		}
+
+		std::sort(name_id_pairs.begin(), name_id_pairs.end());
+
+
+		for (const auto& image : name_id_pairs)
+		{
+			image_names.push_back(image.second);
+		}
+
+		if (output)
+		{
+			std::ofstream output_image_stream;
+			output_image_stream.open(folder + "/" + "images.txt");
+
+			if (!output_image_stream.is_open())
+			{
+				std::cout << "Error: Output file " + folder + "/" + "images.txt" + " couldn't be opened for writing";
+			}
+			else for (const auto& image_name : image_names)
+			{
+				output_image_stream << image_name << "\n";
+			}
+		}
+	}
+
+
+	return image_names;
+
+}

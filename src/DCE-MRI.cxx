@@ -3,8 +3,11 @@
 #include "MRISessionHorizontal.h"
 #include "Analysis.h"
 #include "windows.h"
-#include <chrono>
 
+#include <chrono>
+#include <iostream>
+#include <fstream>
+/*
 std::shared_ptr<MRISequence> read_sequence(const std::string& folder, int sequence_id)
 {
 	std::shared_ptr<MRISession> session(new MRISessionHorizontal(folder));
@@ -67,7 +70,7 @@ void dicom_to_png(std::vector<std::string> folder, std::vector<int> sequence_id)
 		std::cout << i << " write:" << elapsed.count() << "ms\n";
 	}
 }
-
+*/
 int main(int argc, char** argv)
 {
 	std::vector<std::string> folder
@@ -95,10 +98,31 @@ int main(int argc, char** argv)
 	};
 	std::vector<int> sequence_id{ 35, 60, 44, 70, 55, 70, 55, 35, 29, 58, 56, 82, 55, 79, 35, 57, 45, 69, 35, 59 };
 
-	dicom_to_png(folder, sequence_id);
+	for (auto i = 0; i < folder.size(); i++)
+	{
+		MRISession session(folder[i]);		
 
-	
-	auto sequence = read_sequence("D:/Dokumenty/Projects/QIN Breast DCE-MRI/contrast/sequence12/");
+		auto start = std::chrono::system_clock::now();
+
+		session.read();
+
+		std::cout << "folder " << i << "\n";
+
+		auto end = std::chrono::system_clock::now();
+		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+		std::cout << i << " write:" << elapsed.count() << "ms\n";
+	}
+
+
+	/*
+	MRISequence sequence("D:/Dokumenty/Projects/QIN Breast DCE-MRI/contrast/sequence12/");
+	sequence.read();
+	sequence.show("dsd");
+
+	auto triangle_sequence = registration(sequence, OPTIMAL_TRIANGULATION, false, true);
+	*/
+	/*auto sequence = read_sequence("D:/Dokumenty/Projects/QIN Breast DCE-MRI/contrast/sequence12/");
 	sequence->show("sd");
 
 	auto triangle_sequence = registration(*sequence, OPTIMAL_TRIANGULATION, false, true);
@@ -110,7 +134,7 @@ int main(int argc, char** argv)
 	
 	std::vector<std::shared_ptr<MRISequence>> sequences{ sequence, triangle_sequence, homography_sequence };
 
-	registration_correlation(sequences);
+	registration_correlation(sequences);*/
 	
 	return 0;
 }

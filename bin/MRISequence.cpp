@@ -27,6 +27,13 @@ MRISequence::MRISequence(const std::string & folder, int sequence_id) : MRISeque
 	m_sequence_id = sequence_id;
 }
 
+MRISequence::MRISequence(const std::string & folder, std::vector<std::string>& image_names, int sequence_id)
+{
+	m_image_names = image_names;
+	m_folder = folder;
+	m_sequence_id = sequence_id;
+}
+
 MRISequence::MRISequence(const MRISequence & other)
 {
 	*this = other;
@@ -81,14 +88,22 @@ MRISequence & MRISequence::operator=(MRISequence&& other)
 
 void MRISequence::read()
 {	
-	std::vector<std::string> names = get_file_names(m_folder);
-	
-	for (const auto& n : names)
-	{		
-		try 
+
+
+	if (m_image_names.size() == 0)
+	{
+		m_image_names = get_dicom_file_names(m_folder, false, false);
+	}
+	if (m_image_names.size() == 0)
+	{
+		m_image_names = get_file_names(m_folder);
+	}
+	for (const auto& name : m_image_names)
+	{
+		try
 		{
-			cv::Mat image = read_image(m_folder + "/" + n);
-			m_images.push_back(image);		
+			cv::Mat image = read_image(m_folder + "/" + name);
+			m_images.push_back(image);
 		}
 		catch (std::invalid_argument e)
 		{
@@ -247,7 +262,7 @@ cv::Mat read_image(const std::string & file_name, bool print_info)
 		}
 		catch (itk::ExceptionObject)
 		{
-			throw std::invalid_argument("Error Reading File " + file_name + "\n");
+			std::cout << "File " + file_name + "was not recognized as image file and was skipped\n";
 		}
 
 		//Initialize Dictionary

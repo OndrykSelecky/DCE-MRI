@@ -20,51 +20,24 @@ public:
 	*/
 	MRISession(const std::string& folder) { m_folder = folder; };
 	
-
-	/*
-	access i-th sequence via []
-	*/
-	std::shared_ptr<MRISequence> operator[](int i) { return m_sequences[i]; }
-
-
-	/*
-	acces i-th sequence in const functions
-	*/
-	const std::shared_ptr<MRISequence> operator[](int i) const { return m_sequences[i]; }
-
-
-
+	
 	/*
 	Method for reading sequence list in folder. If txt file with sequence order is found, it is read. Otherwise, in each subfolder of m_folder it is searched for dicom file. 
 	If valid dicom image file is found, it's order number in session is found and assigned to sequence. After all subfolders are searched, 
 	sequences are sorted according to order number and order is also saved to textfile.
 	*/
-	virtual void read(bool new_read = false);
+	void read(bool new_read = false);
 		
-
-	/*
-	Appends sequences at the end of vector
-	*/
-	void add_sequence(std::shared_ptr<MRISequence> sequence) { m_sequences.push_back(sequence); };
-	
+		
+	MRISequence get_sequence(unsigned int sequence_number);
 
 
-	/*
-	clear sequence vector
-	*/
-	void clear() { m_sequences.clear(); };
-
-
-	/*
-	referrence to data vector
-	*/
-	const std::vector<std::shared_ptr<MRISequence>>& data() const { return m_sequences; }
-	
+	MRISequence get_horizontal_sequence(unsigned int sequence_number);
 
 	/*
 	Returns number of sequences
 	*/
-	size_t get_sequence_count() const { return m_sequences.size(); }	
+	size_t get_sequence_count() const { return m_sequence_folders.size();  }
 	
 
 	/*
@@ -79,25 +52,42 @@ public:
 	void set_folder_name(const std::string& folder_name) { m_folder = folder_name; }
 	
 
+	/*
+	Getter for names of sequence folders
+	*/
+	std::vector<std::string> get_sequence_folder_names() const { return m_sequence_folders; }
+
 protected:
 	
-	/*
-	Stores sequences in session in shared_ptr
-	*/
-	std::vector<std::shared_ptr<MRISequence>> m_sequences;
+	void read_sequence_folders(bool new_read);
 
 
+	void read_image_names(bool new_read);
+
+	
 	/*
 	Session folder
 	*/
 	std::string m_folder;
 
 
-
 	/*
-	Return id of sequence in subfolder
+	Names of sequence folders, ordered by acquisition time
 	*/
-	int find_sequence_id(const std::string& sub_folder);
+	std::vector<std::string> m_sequence_folders;
+
+	
+	/*
+	Names of images in each folder, ordered by image id
+	*/
+	std::vector<std::vector<std::string>> m_image_names;
 
 };
 
+
+std::vector<std::string> get_dicom_file_names(const std::string& folder, bool new_read, bool output = true);
+
+/*
+Return id of sequence in subfolder
+*/
+int find_id(const std::string& file, const std::string& entry_id);

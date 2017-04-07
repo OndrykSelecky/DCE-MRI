@@ -41,6 +41,28 @@ std::vector<std::string> get_folder_names(std::string folder)
 	return names;
 }
 
+std::string get_first_file_name(const std::string& folder, const std::string & suffix)
+{
+	/*
+	Find name of first file in folder
+	*/
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
+	std::string file_name;
+
+	hFind = FindFirstFile((folder + "/*" + suffix).c_str(), &FindFileData);
+	if (hFind == INVALID_HANDLE_VALUE)
+	{
+		file_name = "";
+	}
+	else
+	{
+		file_name = FindFileData.cFileName;
+		FindClose(hFind);
+	}
+	return file_name;
+}
+
 
 bool pointSortPredicate(const Shx& a, const Shx& b)
 {

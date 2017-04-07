@@ -63,7 +63,7 @@ MRISequenceHorizontal & MRISequenceHorizontal::operator=(MRISequenceHorizontal&&
 
 void MRISequenceHorizontal::read(const MRISessionHorizontal& session)
 {
-	auto folder_names = session.get_folder_names();
+	auto folder_names = session.get_sequence_folder_names();
 
 	try
 	{

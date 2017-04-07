@@ -327,9 +327,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="Analysis.cpp" />
     <ClCompile Include="C:\Users\ondryk\Documents\Visual Studio 2015\Projects\DCE-MRI\src\DCE-MRI.cxx" />
     <ClCompile Include="MRISequence.cpp" />
-    <ClCompile Include="MRISequenceHorizontal.cpp" />
     <ClCompile Include="MRISession.cpp" />
-    <ClCompile Include="MRISessionHorizontal.cpp" />
     <ClCompile Include="MyOpenCVDicomReader.cpp" />
     <ClCompile Include="Registration.cpp" />
     <ClCompile Include="stdafx.cpp" />
@@ -343,15 +341,17 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Analysis.h" />
-    <ClInclude Include="MRISequenceHorizontal.h" />
     <ClInclude Include="MRISession.h" />
-    <ClInclude Include="MRISessionHorizontal.h" />
     <ClInclude Include="MyOpenCVDicomReader.h" />
     <ClInclude Include="MRISequence.h" />
     <ClInclude Include="Registration.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="s_hull_pro.h" />
     <ClInclude Include="Util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
