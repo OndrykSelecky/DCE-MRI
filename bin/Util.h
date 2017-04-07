@@ -1,8 +1,8 @@
 #pragma once
 #include <vector>
 #include "opencv2/opencv.hpp"
+#include "s_hull_pro.h"
 
-typedef std::vector<std::vector<cv::Point2f>> features;
 
 struct Triangle
 {
@@ -18,3 +18,9 @@ struct Triangle
 
 std::vector<std::string> get_file_names(std::string folder, const std::string& suffix = "");
 std::vector<std::string> get_folder_names(std::string folder);
+
+
+//Point comparisions functions from s-hull algorithm
+bool pointSortPredicate(const Shx& a, const Shx& b);
+
+bool pointComparisonPredicate(const Shx& a, const Shx& b);

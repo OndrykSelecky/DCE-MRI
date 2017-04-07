@@ -40,7 +40,7 @@ public:
 
 	void write_txt(const std::string& file_name);
 
-	void write(const std::string& folder, int image_type, bool adjust_contrast = false);
+	void write(const std::string& folder, int image_type = CV_16UC1, bool adjust_contrast = false);
 
 	//Show sequence
 	void show(std::string window_name = std::string(""));

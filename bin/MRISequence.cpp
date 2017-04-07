@@ -57,7 +57,7 @@ MRISequence & MRISequence::operator=(const MRISequence& other)
 		}
 		this->m_images = images;
 	}
-	
+	std::cout << "copy:\n\t" << m_folder << "\n\t" << m_sequence_id << "\n";
 	return *this;
 }
 
@@ -74,7 +74,7 @@ MRISequence & MRISequence::operator=(MRISequence&& other)
 		this->m_images = other.m_images;
 		other.m_images.clear();
 	}
-	
+	std::cout << "move:\n\t" << m_folder << "\n\t" << m_sequence_id << "\n";
 	return *this;
 }
 
@@ -142,7 +142,7 @@ void MRISequence::write(const std::string & folder, int image_type, bool adjust_
 	std::vector<int> compression_params;
 	compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
 	compression_params.push_back(0);
-	std::cout << m_contrast;
+	
 	int image_number = 0;
 	for (auto i= 0; i< m_images.size(); i++)
 	{

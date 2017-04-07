@@ -39,7 +39,7 @@ MRISequenceHorizontal & MRISequenceHorizontal::operator=(const MRISequenceHorizo
 		}
 		this->m_images = images;
 	}
-	
+	std::cout << "h copy:\n\t" << m_folder << "\n\t" << m_sequence_id << "\n";
 	return *this;
 }
 
@@ -57,7 +57,7 @@ MRISequenceHorizontal & MRISequenceHorizontal::operator=(MRISequenceHorizontal&&
 		this->m_images = other.m_images;
 		other.m_images.clear();
 	}
-	
+	std::cout << "h move:\n\t" << m_folder << "\n\t" << m_sequence_id << "\n";
 	return *this;
 }
 

@@ -40,3 +40,21 @@ std::vector<std::string> get_folder_names(std::string folder)
 	}
 	return names;
 }
+
+
+bool pointSortPredicate(const Shx& a, const Shx& b)
+{
+	if (a.r < b.r)
+		return true;
+	else if (a.r > b.r)
+		return false;
+	else if (a.c < b.c)
+		return true;
+	else
+		return false;
+};
+
+bool pointComparisonPredicate(const Shx& a, const Shx& b)
+{
+	return a.r == b.r && a.c == b.c;
+}
