@@ -85,7 +85,7 @@ protected:
 };
 
 
-std::vector<std::string> get_dicom_file_names(const std::string& folder, bool new_read, bool output = true);
+std::vector<std::string> get_dicom_file_names(const std::string& folder, bool new_read);
 
 /*
 Return id of sequence in subfolder

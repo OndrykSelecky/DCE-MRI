@@ -27,7 +27,7 @@ MRISequence::MRISequence(const std::string & folder, int sequence_id) : MRISeque
 	m_sequence_id = sequence_id;
 }
 
-MRISequence::MRISequence(const std::string & folder, std::vector<std::string>& image_names, int sequence_id)
+MRISequence::MRISequence(const std::string & folder, std::vector<std::string> image_names, int sequence_id)
 {
 	m_image_names = image_names;
 	m_folder = folder;
@@ -54,6 +54,7 @@ MRISequence & MRISequence::operator=(const MRISequence& other)
 		this->m_sequence_id = other.m_sequence_id;
 		this->m_trackbar_max = other.m_trackbar_max;
 		this->m_trackbar_value = other.m_trackbar_value;
+		this->m_image_names = other.m_image_names;
 
 		std::vector<cv::Mat> images;
 		for (auto img : other.m_images)
@@ -77,7 +78,7 @@ MRISequence & MRISequence::operator=(MRISequence&& other)
 		this->m_sequence_id = other.m_sequence_id;
 		this->m_trackbar_max = other.m_trackbar_max;
 		this->m_trackbar_value = other.m_trackbar_value;
-
+		this->m_image_names = other.m_image_names;
 		this->m_images = other.m_images;
 		other.m_images.clear();
 	}
@@ -92,7 +93,7 @@ void MRISequence::read()
 
 	if (m_image_names.size() == 0)
 	{
-		m_image_names = get_dicom_file_names(m_folder, false, false);
+		m_image_names = get_dicom_file_names(m_folder, false);
 	}
 	if (m_image_names.size() == 0)
 	{

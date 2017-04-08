@@ -15,7 +15,7 @@ public:
 
 	MRISequence(const std::string& folder, int sequence_id = -1);
 
-	MRISequence(const std::string& folder, std::vector<std::string>& image_names, int sequence_id = -1);
+	MRISequence(const std::string& folder, std::vector<std::string> image_names, int sequence_id = -1);
 		
 	virtual ~MRISequence() {};
 

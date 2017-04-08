@@ -18,14 +18,14 @@ double correlation(cv::Mat & first_image,cv::Mat & second_image)
 	}
 }
 
-double registration_correlation(std::vector<std::shared_ptr<MRISequence>> sequences)
+double registration_correlation(std::vector<MRISequence> sequences)
 {
 	int sequence_num = sequences.size();
 	int image_num = 0;
 
 	if (sequence_num > 0)
 	{
-		image_num = sequences[0]->image_count();
+		image_num = sequences[0].image_count();
 	}
 	else
 	{
@@ -37,9 +37,9 @@ double registration_correlation(std::vector<std::shared_ptr<MRISequence>> sequen
 		std::cout << i << ": ";
 		for (auto j = 0; j < sequence_num; j++)
 		{
-			auto M1 = (*sequences[j])[0];
-			auto M2 = (*sequences[j])[i];
-			std::cout << correlation((*sequences[j])[0], (*sequences[j])[i]) << " ";
+			auto M1 = sequences[j][0];
+			auto M2 = sequences[j][i];
+			std::cout << correlation(sequences[j][0], sequences[j][i]) << " ";
 		}
 		std::cout << "\n";
 	}

@@ -31,8 +31,7 @@ MRISequence MRISession::get_sequence(unsigned int sequence_number)
 	}
 
 	MRISequence sequence(m_folder + "/" + m_sequence_folders[sequence_number], m_image_names[sequence_number]);
-	sequence.read();
-
+	
 	return sequence;
 }
 
@@ -51,7 +50,7 @@ MRISequence MRISession::get_horizontal_sequence(unsigned int sequence_number)
 	}
 
 	MRISequence sequence(m_folder, file_names);
-	sequence.read();
+	
 
 	return sequence;
 }
@@ -220,7 +219,7 @@ int find_id(const std::string& file, const std::string& entry_id)
 }
 
 
-std::vector<std::string> get_dicom_file_names(const std::string & folder, bool new_read, bool output)
+std::vector<std::string> get_dicom_file_names(const std::string & folder, bool new_read)
 {
 	std::vector<std::string> image_names;
 
@@ -243,6 +242,9 @@ std::vector<std::string> get_dicom_file_names(const std::string & folder, bool n
 	else
 	{
 		auto file_names = get_file_names(folder, ".dcm");
+
+
+		if (file_names.size() == 0) return image_names;
 
 		std::vector<std::pair<int, std::string>> name_id_pairs;
 
@@ -267,8 +269,7 @@ std::vector<std::string> get_dicom_file_names(const std::string & folder, bool n
 			image_names.push_back(image.second);
 		}
 
-		if (output)
-		{
+		
 			std::ofstream output_image_stream;
 			output_image_stream.open(folder + "/" + "images.txt");
 
@@ -280,7 +281,7 @@ std::vector<std::string> get_dicom_file_names(const std::string & folder, bool n
 			{
 				output_image_stream << image_name << "\n";
 			}
-		}
+		
 	}
 
 
