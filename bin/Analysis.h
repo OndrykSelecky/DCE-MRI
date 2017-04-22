@@ -5,4 +5,4 @@
 
 double correlation(cv::Mat& first_image, cv::Mat& second_image);
 
-double registration_correlation(std::vector<std::shared_ptr<MRISequence>> sequences);
+std::vector<double> registration_correlation(std::vector<MRISequence>& sequences, std::ofstream& output);

@@ -59,7 +59,7 @@ void MRISession::read_sequence_folders(bool new_read)
 {
 	
 	/*
-	set up input stream for reding ordered folder names
+	set up input stream for reading ordered folder names
 	*/
 	std::ifstream sequence_input_stream;
 	sequence_input_stream.open(m_folder + "/" + "sequences.txt");

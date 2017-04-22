@@ -76,7 +76,7 @@ void dicom_to_png(std::vector<std::string> folder, std::vector<int> sequence_id)
 	}
 }
 
-int main(int argc, char** argv)
+int test_20()
 {
 	std::vector<std::string> folder
 	{
@@ -101,13 +101,45 @@ int main(int argc, char** argv)
 		"D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC16/1.3.6.1.4.1.14519.5.2.1.2103.7010.163218365376500032683258751269/",
 		"D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC16/1.3.6.1.4.1.14519.5.2.1.2103.7010.163218365376500032683258751269/"
 	};
+
+	/*
+	std::vector<cv::Point2f> src_points = { cv::Point2f(0,0), cv::Point2f(10,0), cv::Point2f(0,10), cv::Point2f(10,10)};
+	std::vector<cv::Point2f> dst_points = { cv::Point2f(0,2), cv::Point2f(9,1), cv::Point2f(0,7), cv::Point2f(9,6) };
+
+	cv::Mat transformation_matrix = cv::getPerspectiveTransform(src_points, dst_points);
+
+	std::cout << transformation_matrix;
+
+	return 0;*/
+
+
 	std::vector<int> sequence_id{ 35, 60, 44, 70, 55, 70, 55, 35, 29, 58, 56, 82, 55, 79, 35, 57, 45, 69, 35, 59 };
 
-	std::vector<MRISession> session;
+	std::vector<MRISequence> sequences(sequence_id.size());
 
-	/*for (auto i = 0; i < folder.size(); i++)
+	//cut roi from sequence
+	/*MRISequence seq("D:/Dokumenty/Projects/QIN Breast DCE-MRI/orig_contrast/sequence1/");
+	seq.read();
+
+	seq.show("dfd");
+	cv::Rect myROI(176, 61, 304-176, 146-61);
+	for (auto& i : seq.data())
 	{
-		MRISession s(folder[i]);		
+	i = i(myROI);
+	}
+	seq.show("dfd");
+	seq.write("D:/Dokumenty/Projects/QIN Breast DCE-MRI/orig_contrast/sequence1 – kópia/", 2, true);
+
+	return 0;*/
+
+
+	std::vector<double> max_diff = { 2, 3, 5, 7 };
+	std::vector<double> quality = { 0.0005, 0.001, 0.01, 0.05 };
+	std::vector<int> min_distance = { 5, 7, 10, 13 };
+
+	for (auto i = 0; i < folder.size(); i++)
+	{
+		MRISession s(folder[i]);
 
 		auto start = std::chrono::system_clock::now();
 
@@ -119,30 +151,101 @@ int main(int argc, char** argv)
 		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
 		std::cout << i << " write:" << elapsed.count() << "ms\n";
-		session.push_back(s);
-	}*/
 
-	dicom_to_png(folder, sequence_id);
-	
-	MRISequence sequence = session[12].get_horizontal_sequence(15);
-	sequence.read();
-	sequence.show("dsd");
+		sequences[i] = s.get_horizontal_sequence(sequence_id[i]);
+		sequences[i].read();
 
-	auto triangle_sequence = registration(sequence, OPTIMAL_TRIANGULATION, false, true);
-	
-	/*auto sequence = read_sequence("D:/Dokumenty/Projects/QIN Breast DCE-MRI/contrast/sequence12/");
-	sequence->show("sd");
 
-	auto triangle_sequence = registration(*sequence, OPTIMAL_TRIANGULATION, false, true);
+		/*auto str = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/orig_contrast/sequence" + std::to_string(i);
+		CreateDirectory(str.c_str(), NULL);
+		sequences[i].write(str, 2, true);
 
-	auto homography_sequence = registration(*sequence, HOMOGRAPHY);
+		//writing
+		features features = detect_features(sequences[i]);
+		auto triangle_sequence = registration(sequences[i], features, OPTIMAL_TRIANGULATION, false, true);
+		*/
 
-	CreateDirectory("D:/Dokumenty/Projects/QIN Breast DCE-MRI/Sequence3", NULL);
-	sequence->write("D:/Dokumenty/Projects/QIN Breast DCE-MRI/Sequence3/", CV_16UC1);
-	
-	std::vector<std::shared_ptr<MRISequence>> sequences{ sequence, triangle_sequence, homography_sequence };
+		/*auto str = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/registered_contrast/sequence" + std::to_string(i);
+		CreateDirectory(str.c_str(), NULL);
+		triangle_sequence.write(str, 2, true);*/
+		/*
+		str = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/orig/sequence" + std::to_string(i);
+		CreateDirectory(str.c_str(), NULL);
+		sequences[i].write(str);
+		*/
+	}
+
+
+	std::ofstream output;
+	output.open("feature_test.txt");
+	if (!output.is_open()) return -1;
+	output << "image_id sequence triangle homography\n\n\n";
+
+	std::ofstream average_output;
+	average_output.open("average.txt");
+	if (!average_output.is_open()) return -1;
+
+	for (auto i = 0; i< sequences.size(); i++)
+	{
+		output << "Sequence " << i << "\n";
+		output << folder[i] << "\n";
+		output << sequence_id[i] << "\n";
+		average_output << "Sequence " << i << "\n";
+		average_output << folder[i] << "\n";
+		average_output << sequence_id[i] << "\n";
+
+
+		for (auto diff : max_diff)
+		{
+			for (auto q : quality)
+			{
+				for (auto dist : min_distance)
+				{
+
+					auto start = std::chrono::system_clock::now();
+
+					output << "max_diff: " << diff << ", quality: " << q << ", min_dist: " << dist << "\n\n";
+
+					features features = detect_features(sequences[i], diff, 500, q, dist);
+
+					auto homography_sequence = registration(sequences[i], features, HOMOGRAPHY, false, false);
+					auto triangle_sequence = registration(sequences[i], features, OPTIMAL_TRIANGULATION, false, false);
+
+					auto averages = registration_correlation(std::vector<MRISequence>{sequences[i], triangle_sequence, homography_sequence}, output);
+
+					average_output << "max_diff: " << diff << ", quality: " << q << ", min_dist: " << dist << "\n";
+					for (const auto& a : averages)
+					{
+						average_output << a << " ";
+					}
+					average_output << "\n\n";
+
+					auto end = std::chrono::system_clock::now();
+					auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+					std::cout << " transform:" << elapsed.count() << "ms\n";
+
+				}
+
+			}
+
+		}
+
+	}
+
+
+
+	/*auto triangle_sequence = registration(sequence, OPTIMAL_TRIANGULATION, false, true);
+	auto homography_sequence = registration(sequence, HOMOGRAPHY);
+
+	std::vector<MRISequence> sequences{ sequence, triangle_sequence, homography_sequence };
 
 	registration_correlation(sequences);*/
+}
+
+int main(int argc, char** argv)
+{
+	test_20();
 	
 	return 0;
 }

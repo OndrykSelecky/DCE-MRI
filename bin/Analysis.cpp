@@ -18,7 +18,7 @@ double correlation(cv::Mat & first_image,cv::Mat & second_image)
 	}
 }
 
-double registration_correlation(std::vector<MRISequence> sequences)
+std::vector<double> registration_correlation(std::vector<MRISequence>& sequences, std::ofstream& output)
 {
 	int sequence_num = sequences.size();
 	int image_num = 0;
@@ -29,21 +29,28 @@ double registration_correlation(std::vector<MRISequence> sequences)
 	}
 	else
 	{
-		return -1;
+		return std::vector<double>();
 	}
+	if (image_num <= 0) return std::vector<double>();
 
+	std::vector<double> average(sequence_num,0.0);
+	
 	for (auto i = 1; i < image_num; i++)
 	{
-		std::cout << i << ": ";
+		output << i << " ";
 		for (auto j = 0; j < sequence_num; j++)
 		{
-			auto M1 = sequences[j][0];
-			auto M2 = sequences[j][i];
-			std::cout << correlation(sequences[j][0], sequences[j][i]) << " ";
+			auto correl = correlation(sequences[j][0], sequences[j][i]);
+			output << correl << " ";
+			average[j] += correl;
 		}
-		std::cout << "\n";
+		output << "\n";
+	}
+	output << "\n";
+	for (auto& avg : average)
+	{
+		avg /= image_num;
 	}
 
-
-	return 0;
+	return average;
 }

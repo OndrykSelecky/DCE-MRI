@@ -11,7 +11,7 @@
 
 
 
-features detect_features(const MRISequence& sequence, double max_difference, int maxCorners, double qualityLevel, int minDistance)
+features detect_features(const MRISequence& sequence, double max_difference, int max_corners, double quality_level, int min_distance)
 {
 	auto image_count = sequence.image_count();
 	if (image_count < 2) throw std::invalid_argument("number of images (" + std::to_string(image_count) + ") is too small\n");
@@ -35,7 +35,7 @@ features detect_features(const MRISequence& sequence, double max_difference, int
 	
 
 	// Find features to track
-	cv::goodFeaturesToTrack(prev_img, prev_feature_points, maxCorners, qualityLevel, minDistance, cv::noArray());
+	cv::goodFeaturesToTrack(prev_img, prev_feature_points, max_corners, quality_level, min_distance, cv::noArray());
 
 
 	int features_count = prev_feature_points.size();
@@ -55,7 +55,7 @@ features detect_features(const MRISequence& sequence, double max_difference, int
 		std::vector<float> error;
 
 		cv::calcOpticalFlowPyrLK(prev_img, next_img, prev_feature_points, next_feature_points, status, error);
-
+		
 		detected_features_flow[i] = next_feature_points;
 		detected_features_status[i] = status;
 		
@@ -363,19 +363,22 @@ void show_features(MRISequence& sequence, const features& features)
 
 	for (auto i = 0; i < sequence.image_count(); i++)
 	{
+		//cv::Mat img = cv::Mat::zeros(sequence[i].size(), sequence[i].type());
 		cv::Mat img;
 		sequence[i].copyTo(img);
 
 		for (auto j = 0; j < features[i].size(); j++)
 		{
-			circle(img, features[i][j], 4, cv::Scalar(255, 0, 255), -1, 8, 0);
+			circle(img, features[i][j], 4, cv::Scalar(0.9, 0.9, 0.9), -1, 8, 0);
 		}
 
 		feature_sequence.add_image(img);
 	}
 
+	//we will move sequence, so window will remain active outside function
 	sequence = std::move(feature_sequence);
 	sequence.show("Features Detected");
+	//sequence.write("D:/Dokumenty/Projects/QIN Breast DCE-MRI/registered_contrast", 2, true);
 }
 
 void show_triangles(MRISequence& sequence, const std::vector<Triangle>& triangles, const features& features)
@@ -410,17 +413,16 @@ void show_triangles(MRISequence& sequence, const std::vector<Triangle>& triangle
 }
 
 
-MRISequence registration(MRISequence& sequence, const int method, bool reverse, bool show)
+MRISequence registration(MRISequence& sequence, features& features, const int method, bool reverse, bool show)
 {
 	
-	if (reverse) std::reverse(sequence.data().begin(), sequence.data().end());
+	//if (reverse) std::reverse(sequence.data().begin(), sequence.data().end());
 	if (show) sequence.show("Sequence");
 	
 
-	features features = detect_features(sequence);
+	MRISequence feature_sequence(sequence);
 	if (show)
-	{
-		MRISequence feature_sequence(sequence);
+	{		
 		show_features(feature_sequence, features);
 	}
 	
