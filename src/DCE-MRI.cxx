@@ -190,9 +190,9 @@ int test_20()
 		output << "Sequence " << i << "\n";
 		output << folder[i] << "\n";
 		output << sequence_id[i] << "\n";
-		average_output << "Sequence " << i << "\n";
+		/*average_output << "Sequence " << i << "\n";
 		average_output << folder[i] << "\n";
-		average_output << sequence_id[i] << "\n";
+		average_output << sequence_id[i] << "\n";*/
 
 
 		for (auto diff : max_diff)
@@ -213,7 +213,7 @@ int test_20()
 
 					auto averages = registration_correlation(std::vector<MRISequence>{sequences[i], triangle_sequence, homography_sequence}, output);
 
-					average_output << "max_diff: " << diff << ", quality: " << q << ", min_dist: " << dist << "\n";
+					average_output << diff << " " << q << " " << dist << "\n";
 					for (const auto& a : averages)
 					{
 						average_output << a << " ";
@@ -224,6 +224,8 @@ int test_20()
 					auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
 					std::cout << " transform:" << elapsed.count() << "ms\n";
+					//average_output.flush();
+					//output.flush();
 
 				}
 
@@ -246,6 +248,8 @@ int test_20()
 int main(int argc, char** argv)
 {
 	test_20();
-	
+
+	std::cout << "koniec";
+
 	return 0;
 }
