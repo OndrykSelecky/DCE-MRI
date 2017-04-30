@@ -87,7 +87,7 @@ MRISequence & MRISequence::operator=(MRISequence&& other)
 }
 
 
-void MRISequence::read()
+int MRISequence::read()
 {	
 
 
@@ -113,6 +113,8 @@ void MRISequence::read()
 	}
 
 	set_contrast();
+
+	return m_images.size();
 
 }
 

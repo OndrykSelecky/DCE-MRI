@@ -266,10 +266,10 @@ int s_hull_pro( std::vector<Shx> &pts, std::vector<Triad> &triads)
   Shx pt2 = pts[mid];
 
   int ptest = test_center(pt0, pt1, pt2 );
-  if( ptest < 0 ){
+  /*if( ptest < 0 ){
     cerr << "warning: obtuce seed triangle sellected " << endl;
 	cerr << "\n " << pt0.c << " " << pt0.r << ", " << pt1.c << " " << pt1.r << ", " << pt2.c << " " << pt2.r << "\n";
-   }
+   }*/
 
 
   pts.erase(pts.begin() + mid);  // necessary for round off reasons:((((((

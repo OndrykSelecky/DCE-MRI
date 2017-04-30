@@ -7,6 +7,9 @@
 
 class MRISession;
 
+/*
+Representation of sequence of images
+*/
 class MRISequence
 {
 public:
@@ -17,16 +20,15 @@ public:
 
 	MRISequence(const std::string& folder, std::vector<std::string> image_names, int sequence_id = -1);
 		
-	virtual ~MRISequence() {};
+	
 
-
-	//Copy constructor
+	//Copy and move constructors
 	MRISequence(const MRISequence& other);
 
 	MRISequence(MRISequence&& other);
 		
 	
-	//Assignment operator
+	//Assignment and move-assignment operators
 	MRISequence& operator=(const MRISequence &other);
 
 	MRISequence& operator=(MRISequence &&other);
@@ -38,11 +40,13 @@ public:
 	cv::Mat const &operator[](int i) const { return m_images[i]; }
 
 
-	//Read vertical sequence
-	void read();
+	//Read sequence
+	int read();
 
 	void write_txt(const std::string& file_name);
 
+
+	//write sequence to other image format - png
 	void write(const std::string& folder, int image_type = CV_16UC1, bool adjust_contrast = false);
 
 
@@ -91,34 +95,38 @@ public:
 
 protected:
 
+	//names of image files 
 	std::vector<std::string> m_image_names;
+
 
 	//Vector of images
 	std::vector<cv::Mat> m_images;
 	
+
 	//ID of sequence according to acquisition time
 	int m_sequence_id;
 	
+
 	//Sequence folder path
 	std::string m_folder;
 	
 
 
 
-	//Trackbar variables
+	//Trackbar variables, used for visualization
 	int m_trackbar_value;
 
 	int m_trackbar_max;
 
 	std::string m_window_name;
 
-
+	//adjusted contrast for visualization
 	double m_contrast;
 	
 
+
 	//On trackbar change
 	static void on_trackbar(int, void*);
-
 	
 
 };

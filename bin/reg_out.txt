@@ -1,0 +1,74 @@
+2 occurs 20 times.
+3 occurs 20 times.
+5 occurs 20 times.
+7 occurs 20 times.
+0.0005 occurs 8 times.
+0.001 occurs 22 times.
+0.01 occurs 37 times.
+0.05 occurs 13 times.
+5 occurs 18 times.
+7 occurs 19 times.
+10 occurs 33 times.
+13 occurs 10 times.
+2, 0.0005, 5 occurs 3 times.
+2, 0.0005, 7 occurs 6 times.
+2, 0.0005, 10 occurs 5 times.
+2, 0.0005, 13 occurs 1 times.
+2, 0.001, 5 occurs 5 times.
+2, 0.001, 7 occurs 7 times.
+2, 0.001, 10 occurs 4 times.
+2, 0.001, 13 occurs 3 times.
+2, 0.01, 5 occurs 5 times.
+2, 0.01, 7 occurs 7 times.
+2, 0.01, 10 occurs 2 times.
+2, 0.01, 13 occurs 5 times.
+2, 0.05, 5 occurs 2 times.
+2, 0.05, 7 occurs 2 times.
+2, 0.05, 10 occurs 2 times.
+2, 0.05, 13 occurs 1 times.
+3, 0.0005, 5 occurs 2 times.
+3, 0.0005, 7 occurs 3 times.
+3, 0.0005, 10 occurs 13 times.
+3, 0.0005, 13 occurs 1 times.
+3, 0.001, 5 occurs 2 times.
+3, 0.001, 7 occurs 3 times.
+3, 0.001, 10 occurs 12 times.
+3, 0.001, 13 occurs 1 times.
+3, 0.01, 5 occurs 3 times.
+3, 0.01, 7 occurs 7 times.
+3, 0.01, 10 occurs 5 times.
+3, 0.01, 13 occurs 4 times.
+3, 0.05, 5 occurs 1 times.
+3, 0.05, 7 occurs 1 times.
+3, 0.05, 10 occurs 1 times.
+3, 0.05, 13 occurs 1 times.
+5, 0.0005, 5 occurs 3 times.
+5, 0.0005, 7 occurs 6 times.
+5, 0.0005, 10 occurs 7 times.
+5, 0.0005, 13 occurs 2 times.
+5, 0.001, 5 occurs 4 times.
+5, 0.001, 7 occurs 6 times.
+5, 0.001, 10 occurs 7 times.
+5, 0.001, 13 occurs 2 times.
+5, 0.01, 5 occurs 6 times.
+5, 0.01, 7 occurs 7 times.
+5, 0.01, 10 occurs 3 times.
+5, 0.01, 13 occurs 1 times.
+5, 0.05, 5 occurs 1 times.
+5, 0.05, 7 occurs 1 times.
+5, 0.05, 10 occurs 2 times.
+5, 0.05, 13 occurs 2 times.
+7, 0.0005, 5 occurs 5 times.
+7, 0.0005, 7 occurs 6 times.
+7, 0.0005, 10 occurs 4 times.
+7, 0.0005, 13 occurs 1 times.
+7, 0.001, 5 occurs 7 times.
+7, 0.001, 7 occurs 8 times.
+7, 0.001, 10 occurs 3 times.
+7, 0.01, 5 occurs 8 times.
+7, 0.01, 7 occurs 5 times.
+7, 0.01, 10 occurs 3 times.
+7, 0.05, 5 occurs 3 times.
+7, 0.05, 7 occurs 2 times.
+7, 0.05, 10 occurs 3 times.
+7, 0.05, 13 occurs 2 times.

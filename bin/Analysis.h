@@ -3,6 +3,10 @@
 #include "MRISequence.h"
 #include "Util.h"
 
+
+//computes correlation of two images
 double correlation(cv::Mat& first_image, cv::Mat& second_image);
 
-std::vector<double> registration_correlation(std::vector<MRISequence>& sequences, std::ofstream& output);
+
+//corelation of sequences
+std::vector<double> registration_correlation(std::vector<MRISequence>& sequences, std::ostream& output);

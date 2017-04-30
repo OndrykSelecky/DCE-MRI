@@ -1,6 +1,4 @@
 #include "Registration.h"
-#include "MRISequenceHorizontal.h"
-#include "MRISessionHorizontal.h"
 #include "Analysis.h"
 #include "windows.h"
 
@@ -118,19 +116,21 @@ int test_20()
 	std::vector<MRISequence> sequences(sequence_id.size());
 
 	//cut roi from sequence
-	/*MRISequence seq("D:/Dokumenty/Projects/QIN Breast DCE-MRI/orig_contrast/sequence1/");
+	MRISequence seq("D:/Dokumenty/Projects/QIN Breast DCE-MRI/orig_contrast/sequence1/");
 	seq.read();
 
 	seq.show("dfd");
-	cv::Rect myROI(176, 61, 304-176, 146-61);
+	cv::Rect myROI(220, 92, 15, 10);
 	for (auto& i : seq.data())
 	{
 	i = i(myROI);
+	std::cout << i;
+
 	}
 	seq.show("dfd");
 	seq.write("D:/Dokumenty/Projects/QIN Breast DCE-MRI/orig_contrast/sequence1 – kópia/", 2, true);
 
-	return 0;*/
+	return 0;
 
 
 	std::vector<double> max_diff = { 2, 3, 5, 7 };
@@ -208,8 +208,8 @@ int test_20()
 
 					features features = detect_features(sequences[i], diff, 500, q, dist);
 
-					auto homography_sequence = registration(sequences[i], features, HOMOGRAPHY, false, false);
-					auto triangle_sequence = registration(sequences[i], features, OPTIMAL_TRIANGULATION, false, false);
+					auto homography_sequence = registration(sequences[i], features, HOMOGRAPHY,  false);
+					auto triangle_sequence = registration(sequences[i], features, OPTIMAL_TRIANGULATION, false);
 
 					auto averages = registration_correlation(std::vector<MRISequence>{sequences[i], triangle_sequence, homography_sequence}, output);
 
@@ -245,11 +245,26 @@ int test_20()
 	registration_correlation(sequences);*/
 }
 
+void example(const std::string& session_folder)
+{
+	MRISession session(session_folder);
+
+	//if new read, can take minute or two
+	session.read();
+
+	MRISequence sequence = session.get_horizontal_sequence(35);
+	sequence.read();
+
+	features features = detect_features(sequence);
+	auto triangle_sequence = registration(sequence, features, OPTIMAL_TRIANGULATION, true);
+	
+}
+
 int main(int argc, char** argv)
 {
-	test_20();
+	example("D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC01/1.3.6.1.4.1.14519.5.2.1.2103.7010.263376750024833697192683349782/");
 
-	std::cout << "koniec";
+	//correlation_result_max();
 
 	return 0;
 }

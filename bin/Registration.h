@@ -5,15 +5,9 @@
 #include "MRISequence.h"
 #include "Util.h"
 
-const int OPTIMAL_TRIANGULATION = 1;
-const int HOMOGRAPHY = 2;
-
-typedef std::vector<std::vector<cv::Point2f>> features;
-
-
 
 //Returns features detected throughout the sequence
-features detect_features(const MRISequence& sequence, double max_difference = 5.0f, int max_corners = 500, double quality_level = 0.001, int min_distance = 10);
+features detect_features(const MRISequence& sequence, double max_distance = 5.0f, int max_corners = 500, double quality_level = 0.001, int min_distance = 10);
 
 
 //Finds triangulation of all images in sequence
@@ -37,7 +31,7 @@ void show_triangles(MRISequence& sequence, const std::vector<Triangle>& triangle
 
 
 //Main registration function
-MRISequence registration(MRISequence& sequence, features& features, const int method = OPTIMAL_TRIANGULATION, bool reverse = false, bool show = false);
+MRISequence registration(MRISequence& sequence, features& features, const int method = OPTIMAL_TRIANGULATION, bool show = false);
 
 
 

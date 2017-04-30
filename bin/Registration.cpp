@@ -1,7 +1,5 @@
 #include "Registration.h"
 #include "MRISequence.h"
-#include "MRISessionHorizontal.h"
-#include "MRISequenceHorizontal.h"
 
 #include "opencv2/features2d.hpp"
 #include <fstream>
@@ -11,7 +9,7 @@
 
 
 
-features detect_features(const MRISequence& sequence, double max_difference, int max_corners, double quality_level, int min_distance)
+features detect_features(const MRISequence& sequence, double max_distance, int max_corners, double quality_level, int min_distance)
 {
 	auto image_count = sequence.image_count();
 	if (image_count < 2) throw std::invalid_argument("number of images (" + std::to_string(image_count) + ") is too small\n");
@@ -38,7 +36,7 @@ features detect_features(const MRISequence& sequence, double max_difference, int
 	cv::goodFeaturesToTrack(prev_img, prev_feature_points, max_corners, quality_level, min_distance, cv::noArray());
 
 
-	int features_count = prev_feature_points.size();
+	auto features_count = prev_feature_points.size();
 	detected_features_flow[0] = prev_feature_points;
 	detected_features_status[0] = std::vector<unsigned char>(features_count, 1);
 	
@@ -65,7 +63,7 @@ features detect_features(const MRISequence& sequence, double max_difference, int
 
 	
 	
-	std::vector<unsigned char> valid_features(features_count, 1);
+	std::vector<bool> valid_features(features_count, 1);
 
 	//Find, which features are valid (euclidian distance and status)
 	for (auto i = 1; i < image_count; i++)
@@ -77,7 +75,7 @@ features detect_features(const MRISequence& sequence, double max_difference, int
 
 			double difference = std::sqrt(dx*dx + dy*dy);
 			
-			if (difference > max_difference || detected_features_status[i][j] == 0)			
+			if (difference > max_distance || detected_features_status[i][j] == 0)			
 			{
 				valid_features[j] = false;
 			}
@@ -86,7 +84,7 @@ features detect_features(const MRISequence& sequence, double max_difference, int
 
 		
 	// find how many features are valid
-	int good_features_count = std::count(valid_features.begin(), valid_features.end(), 1);
+	auto good_features_count = std::count(valid_features.begin(), valid_features.end(), 1);
 	//std::cout << "Number of features found: " << features_count << "\nValid features: " << good_features_count << "\n";
 
 
@@ -117,9 +115,9 @@ std::vector<Triangle> triangulate(features& features, const MRISequence& sequenc
 	
 	std::vector<cv::Point2f> corner_points{
 		cv::Point2f(0.0, 0.0),
-		cv::Point2f(sequence[0].size().width - 1, 0.0),
-		cv::Point2f(0.0, sequence[0].size().height - 1),
-		cv::Point2f(sequence[0].size().width - 1, sequence[0].size().height - 1)
+		cv::Point2f((float)sequence[0].size().width - 1, 0.0),
+		cv::Point2f(0.0, (float)sequence[0].size().height - 1),
+		cv::Point2f((float)sequence[0].size().width - 1, (float)sequence[0].size().height - 1)
 	};
 
 	//Add corner points to features if they are not there 
@@ -229,7 +227,7 @@ MRISequence warp_sequence(const MRISequence& sequence, const features& features,
 			for (int j = bounding_rect.y; j < bounding_rect.y + bounding_rect.height; j++)
 
 				//for each point, test if it lies inside rectangle
-				if (cv::pointPolygonTest(triangles[t_id].point_coordinates, cv::Point2f(i,j), false) >= 0)
+				if (cv::pointPolygonTest(triangles[t_id].point_coordinates, cv::Point2f((float)i, (float)j), false) >= 0)
 				{
 					triangle_ids[i][j] = t_id;
 				}
@@ -245,14 +243,14 @@ MRISequence warp_sequence(const MRISequence& sequence, const features& features,
 	{
 		for (int j = 0; j < sequence[0].size().height; j++)
 		{
-			triangle_points[triangle_ids[i][j]].push_back(cv::Point2f(i, j));			
+			triangle_points[triangle_ids[i][j]].push_back(cv::Point2f((float)i, (float)j));			
 		}
 	}
 
 
 	//Transformation
 
-	MRISequenceHorizontal transformed_sequence;
+	MRISequence transformed_sequence;
 	transformed_sequence.set_contrast(sequence.get_contrast());
 	cv::Mat sequence_0;
 	sequence[0].copyTo(sequence_0);
@@ -413,11 +411,11 @@ void show_triangles(MRISequence& sequence, const std::vector<Triangle>& triangle
 }
 
 
-MRISequence registration(MRISequence& sequence, features& features, const int method, bool reverse, bool show)
+MRISequence registration(MRISequence& sequence, features& features, const int method, bool show)
 {
 	
-	//if (reverse) std::reverse(sequence.data().begin(), sequence.data().end());
-	if (show) sequence.show("Sequence");
+	
+	if (show) sequence.show("Sequence" + sequence.get_folder_name());
 	
 
 	MRISequence feature_sequence(sequence);
@@ -431,7 +429,7 @@ MRISequence registration(MRISequence& sequence, features& features, const int me
 	if (method == HOMOGRAPHY)
 	{
 		transformed_sequence = warp_sequence(sequence, features);
-		if (show) transformed_sequence.show("Warped sequence");		
+		if (show) transformed_sequence.show("Warped sequence" + sequence.get_folder_name());
 	}
 	else if (method == OPTIMAL_TRIANGULATION)
 	{
@@ -443,7 +441,7 @@ MRISequence registration(MRISequence& sequence, features& features, const int me
 		}
 
 		transformed_sequence = warp_sequence(sequence, features, triangles);
-		if (show) transformed_sequence.show("Triangulation warped sequence");
+		if (show) transformed_sequence.show("Triangulation warped sequence" + sequence.get_folder_name());
 		
 		
 	}
@@ -452,7 +450,7 @@ MRISequence registration(MRISequence& sequence, features& features, const int me
 		throw std::invalid_argument("Error: Method in function \"registration\" should be OPTIMAL_TRIANGULATION or HOMOGRAPHY\n");
 	}
 	
-	if (reverse) std::reverse(transformed_sequence.data().begin(), transformed_sequence.data().end());
+	
 	return transformed_sequence;
 
 }

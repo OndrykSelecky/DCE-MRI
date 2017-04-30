@@ -15,15 +15,22 @@
 #include "itkRescaleIntensityImageFilter.h"
 
 
-void MRISession::read(bool new_read)
+int MRISession::read(bool new_read)
 {
 	read_sequence_folders(new_read);
 
 	read_image_names(new_read);
+
+	return m_sequence_folders.size();
 }
 
 MRISequence MRISession::get_sequence(unsigned int sequence_number)
 {
+
+	if (m_sequence_folders.size() == 0)
+	{
+		throw std::invalid_argument("Error: Session is empty\n");
+	}
 
 	if (sequence_number >= m_sequence_folders.size())
 	{
@@ -37,6 +44,11 @@ MRISequence MRISession::get_sequence(unsigned int sequence_number)
 
 MRISequence MRISession::get_horizontal_sequence(unsigned int sequence_number)
 {
+	if (m_sequence_folders.size() == 0)
+	{
+		throw std::invalid_argument("Error: Session is empty\n");
+	}
+
 	if (sequence_number >= m_image_names[0].size())
 	{
 		throw std::invalid_argument("Error: Sequence number is greater than number of sequences in session\n");
