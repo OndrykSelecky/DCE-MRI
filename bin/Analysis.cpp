@@ -18,7 +18,7 @@ double correlation(cv::Mat & first_image,cv::Mat & second_image)
 	}
 }
 
-std::vector<double> registration_correlation(std::vector<MRISequence>& sequences, std::ofstream& output)
+std::vector<double> registration_correlation(std::vector<MRISequence>& sequences, std::ostream& output)
 {
 	int sequence_num = sequences.size();
 	int image_num = 0;
@@ -34,6 +34,8 @@ std::vector<double> registration_correlation(std::vector<MRISequence>& sequences
 	if (image_num <= 0) return std::vector<double>();
 
 	std::vector<double> average(sequence_num,0.0);
+
+	//print id of image and correlation between that slice and first slice for all sequences
 	
 	for (auto i = 1; i < image_num; i++)
 	{

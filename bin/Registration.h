@@ -30,7 +30,10 @@ void show_features(MRISequence& sequence, const features& features);
 void show_triangles(MRISequence& sequence, const std::vector<Triangle>& triangles, const features& features);
 
 
-//Main registration function
+/*
+	Main registration function
+	show - show outputs in graphical window
+*/
 MRISequence registration(MRISequence& sequence, features& features, const int method = OPTIMAL_TRIANGULATION, bool show = false);
 
 

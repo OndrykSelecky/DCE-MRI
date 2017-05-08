@@ -25,7 +25,9 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files\s_hull</Filter>
     </ClCompile>
-    <ClCompile Include="Analysis.cpp" />
+    <ClCompile Include="Analysis.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\ondryk\Documents\Visual Studio 2015\Projects\DCE-MRI\src\CMakeLists.txt" />

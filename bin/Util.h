@@ -3,6 +3,9 @@
 #include "opencv2/opencv.hpp"
 #include "s_hull_pro.h"
 
+/*
+definition of constants and function for file reading
+*/
 
 //codes for entries in dicom header
 const std::string SEQUENCE_ENTRY_ID = "0020|0011";
@@ -12,6 +15,11 @@ const std::string IMAGE_ENTRY_ID = "0020|0013";
 //names of transformation types
 const int OPTIMAL_TRIANGULATION = 1;
 const int HOMOGRAPHY = 2;
+
+
+//name of files, where acquisition numbers of images and sequences are stored
+const std::string IMAGE_ORDER_FILE = "images.txt";
+const std::string SEQUENCE_ORDER_FILE = "sequences.txt";
 
 
 //data structure for features

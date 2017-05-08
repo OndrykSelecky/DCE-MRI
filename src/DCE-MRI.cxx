@@ -5,75 +5,9 @@
 #include <chrono>
 #include <iostream>
 #include <fstream>
-/*
-std::shared_ptr<MRISequence> read_sequence(const std::string& folder, int sequence_id)
-{
-	std::shared_ptr<MRISession> session(new MRISessionHorizontal(folder));
-	session->read();
-
-	std::shared_ptr<MRISequenceHorizontal> sequence = std::dynamic_pointer_cast<MRISequenceHorizontal>((*session)[sequence_id]);
 
 
-	try {
-		sequence->read(*(std::dynamic_pointer_cast<MRISessionHorizontal>(session)));
-		//sequence->read();
-	}
-	catch (std::invalid_argument& e)
-	{
-		std::cout << e.what();
-		throw std::invalid_argument("Can't read sequence");
-	}
-
-	return sequence;
-}
-
-std::shared_ptr<MRISequence> read_sequence(const std::string& folder)
-{
-	std::shared_ptr<MRISequence> sequence(std::make_shared<MRISequence>(folder));
-	
-	sequence->read();
-	
-	return sequence;
-}
-*/
-
-void dicom_to_png(std::vector<std::string> folder, std::vector<int> sequence_id)
-{
-	
-	for (auto i = 0; i < folder.size(); i++)
-	{
-		auto start = std::chrono::system_clock::now();
-
-		MRISession s(folder[i]);
-		s.read();
-
-		auto sequence = s.get_horizontal_sequence(sequence_id[i]);
-		sequence.read();
-
-		auto end = std::chrono::system_clock::now();
-		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-		std::cout << i << " read:" << elapsed.count() << "ms\n";
-
-
-		start = std::chrono::system_clock::now();
-
-		std::string current_folder = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/orig/sequence" + std::to_string(i) + "/";
-		CreateDirectory(current_folder.c_str(), NULL);
-		sequence.write(current_folder, CV_16UC1);
-
-		current_folder = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/contrast/sequence" + std::to_string(i) + "/";
-		CreateDirectory(current_folder.c_str(), NULL);
-		sequence.write(current_folder, CV_16UC1);
-		sequence.write(current_folder, CV_16UC1, true);
-
-		end = std::chrono::system_clock::now();
-		elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-		std::cout << i << " write:" << elapsed.count() << "ms\n";
-	}
-}
-
+//test code used for mass test
 int test_20()
 {
 	std::vector<std::string> folder
@@ -100,39 +34,12 @@ int test_20()
 		"D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC16/1.3.6.1.4.1.14519.5.2.1.2103.7010.163218365376500032683258751269/"
 	};
 
-	/*
-	std::vector<cv::Point2f> src_points = { cv::Point2f(0,0), cv::Point2f(10,0), cv::Point2f(0,10), cv::Point2f(10,10)};
-	std::vector<cv::Point2f> dst_points = { cv::Point2f(0,2), cv::Point2f(9,1), cv::Point2f(0,7), cv::Point2f(9,6) };
-
-	cv::Mat transformation_matrix = cv::getPerspectiveTransform(src_points, dst_points);
-
-	std::cout << transformation_matrix;
-
-	return 0;*/
-
 
 	std::vector<int> sequence_id{ 35, 60, 44, 70, 55, 70, 55, 35, 29, 58, 56, 82, 55, 79, 35, 57, 45, 69, 35, 59 };
 
 	std::vector<MRISequence> sequences(sequence_id.size());
 
-	//cut roi from sequence
-	MRISequence seq("D:/Dokumenty/Projects/QIN Breast DCE-MRI/orig_contrast/sequence1/");
-	seq.read();
-
-	seq.show("dfd");
-	cv::Rect myROI(220, 92, 15, 10);
-	for (auto& i : seq.data())
-	{
-	i = i(myROI);
-	std::cout << i;
-
-	}
-	seq.show("dfd");
-	seq.write("D:/Dokumenty/Projects/QIN Breast DCE-MRI/orig_contrast/sequence1 – kópia/", 2, true);
-
-	return 0;
-
-
+	
 	std::vector<double> max_diff = { 2, 3, 5, 7 };
 	std::vector<double> quality = { 0.0005, 0.001, 0.01, 0.05 };
 	std::vector<int> min_distance = { 5, 7, 10, 13 };
@@ -154,25 +61,7 @@ int test_20()
 
 		sequences[i] = s.get_horizontal_sequence(sequence_id[i]);
 		sequences[i].read();
-
-
-		/*auto str = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/orig_contrast/sequence" + std::to_string(i);
-		CreateDirectory(str.c_str(), NULL);
-		sequences[i].write(str, 2, true);
-
-		//writing
-		features features = detect_features(sequences[i]);
-		auto triangle_sequence = registration(sequences[i], features, OPTIMAL_TRIANGULATION, false, true);
-		*/
-
-		/*auto str = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/registered_contrast/sequence" + std::to_string(i);
-		CreateDirectory(str.c_str(), NULL);
-		triangle_sequence.write(str, 2, true);*/
-		/*
-		str = "D:/Dokumenty/Projects/QIN Breast DCE-MRI/orig/sequence" + std::to_string(i);
-		CreateDirectory(str.c_str(), NULL);
-		sequences[i].write(str);
-		*/
+				
 	}
 
 
@@ -190,9 +79,6 @@ int test_20()
 		output << "Sequence " << i << "\n";
 		output << folder[i] << "\n";
 		output << sequence_id[i] << "\n";
-		/*average_output << "Sequence " << i << "\n";
-		average_output << folder[i] << "\n";
-		average_output << sequence_id[i] << "\n";*/
 
 
 		for (auto diff : max_diff)
@@ -224,8 +110,7 @@ int test_20()
 					auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
 					std::cout << " transform:" << elapsed.count() << "ms\n";
-					//average_output.flush();
-					//output.flush();
+					
 
 				}
 
@@ -235,36 +120,97 @@ int test_20()
 
 	}
 
-
-
-	/*auto triangle_sequence = registration(sequence, OPTIMAL_TRIANGULATION, false, true);
-	auto homography_sequence = registration(sequence, HOMOGRAPHY);
-
-	std::vector<MRISequence> sequences{ sequence, triangle_sequence, homography_sequence };
-
-	registration_correlation(sequences);*/
+	return 0;
 }
 
-void example(const std::string& session_folder)
+/*
+example of registration horizontal sequence from session 
+session_folder = folder of MRI Session
+slice_number = number of slice, which is selected for horizontal sequence from each vertical sequence 
+	(for example, if slice_id == 5 -> 5th image is selected from each sequence folder)
+registration method = OPTIMAL TRIANGULATION or HOMOGRAPHY
+*/
+void example_dicom(const std::string& session_folder, int slice_id, int registration_method = OPTIMAL_TRIANGULATION)
 {
+
+	//create new session with folder
 	MRISession session(session_folder);
 
-	//if new read, can take minute or two
-	session.read();
+	//if it is new read, can take minute or two
+	auto sequence_num = session.read();
 
-	MRISequence sequence = session.get_horizontal_sequence(35);
-	sequence.read();
+	//there is no sequence folder in session
+	if (sequence_num <= 0)
+	{
+		std::cerr << "There are no sequences in session\n";
+		return;
+	}
 
+	MRISequence sequence;
+	try
+	{
+		//extract horizontal sequence with slice_id
+		sequence = session.get_horizontal_sequence(slice_id);
+	}
+	catch (std::invalid_argument e)
+	{
+		std::cerr << e.what();
+		return;
+	}
+
+	//read images in memory
+	int image_num = sequence.read();
+
+	if (image_num <= 0)
+	{
+		std::cerr << "There is no image in sequence\n";
+		return;
+	}
+
+	//detect features from sequence
 	features features = detect_features(sequence);
-	auto triangle_sequence = registration(sequence, features, OPTIMAL_TRIANGULATION, true);
+
+	/*
+		registration of sequence
+		last parameter -> show each progress step in separate window. After keyboar key is pressed, process continues to next step
+	*/
+	auto triangle_sequence = registration(sequence, features, registration_method, true);
+
+	//we can export result to png
+	//triangle_sequence.write("output_sequence_folder", CV_16UC1);
 	
+}
+
+
+void example_png_sequence(const std::string& sequence_folder, int registration_method = OPTIMAL_TRIANGULATION)
+{
+	
+	//create new sequence with folder
+	MRISequence sequence(sequence_folder);
+
+	//read images from folder
+	int image_num = sequence.read();
+
+	if (image_num <= 0)
+	{
+		std::cerr << "There is no image in sequence\n";
+		return;
+	}
+
+	//detect features
+	features features = detect_features(sequence);
+
+	//registrate
+	auto result_sequence = registration(sequence, features, registration_method, true);
+
+	//we can export result to png
+	//triangle_sequence.write("output_sequence_folder", CV_16UC1);
 }
 
 int main(int argc, char** argv)
 {
-	example("D:/Dokumenty/Projects/QIN Breast DCE-MRI/QIN-Breast-DCE-MRI-BC01/1.3.6.1.4.1.14519.5.2.1.2103.7010.263376750024833697192683349782/");
-
-	//correlation_result_max();
+	
+	example_dicom("CD Content/Data/DICOM_session/1.3.6.1.4.1.14519.5.2.1.2103.7010.269874611034344926547684818265", 24);
 
 	return 0;
 }

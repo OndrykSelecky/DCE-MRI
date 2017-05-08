@@ -627,7 +627,7 @@ int s_hull_pro( std::vector<Shx> &pts, std::vector<Triad> &triads)
     
   }
 
-  cerr << "of triangles " << triads.size() << " to be flipped. "<< endl;
+  //cerr << "of triangles " << triads.size() << " to be flipped. "<< endl;
  
   //  write_Triads(triads, "tris0.mat");
 

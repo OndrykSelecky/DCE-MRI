@@ -25,12 +25,13 @@ public:
 	Method for reading list of sequences in folder. If txt file with sequence order is found, it is read. Otherwise, in each subfolder of m_folder it is searched for dicom file. 
 	If valid dicom image file is found, it's order number in session is found and assigned to sequence. After all subfolders are searched, 
 	sequences are sorted according to order number and order is also saved to textfile.
+	new_read -> if true, ignore order in text files and read new oeder from headers
 	*/
 	int read(bool new_read = false);
 		
 		
 	/*
-	get verical sequence with by index
+	get veritcal sequence with by index
 	*/
 	MRISequence get_sequence(unsigned int sequence_number);
 
@@ -66,10 +67,11 @@ public:
 
 private:
 	
-
+	//get order of sequence folders 
 	void read_sequence_folders(bool new_read);
 
 
+	//get order of images in each sequence
 	void read_image_names(bool new_read);
 
 	

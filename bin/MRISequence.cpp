@@ -65,7 +65,7 @@ MRISequence & MRISequence::operator=(const MRISequence& other)
 		}
 		this->m_images = images;
 	}
-	//std::cout << "copy:\n\t" << m_folder << "\n\t" << m_sequence_id << "\n";
+	
 	return *this;
 }
 
@@ -82,7 +82,7 @@ MRISequence & MRISequence::operator=(MRISequence&& other)
 		this->m_images = other.m_images;
 		other.m_images.clear();
 	}
-	//std::cout << "move:\n\t" << m_folder << "\n\t" << m_sequence_id << "\n";
+	
 	return *this;
 }
 
@@ -118,35 +118,6 @@ int MRISequence::read()
 
 }
 
-void MRISequence::write_txt(const std::string & file_name)
-{
-	std::ofstream output_stream;
-	output_stream.open(file_name);
-	if (!output_stream.is_open())
-	{
-		std::cout << "Error: file counldn't be opened\n";
-		return;
-	}
-
-	output_stream << m_images[0].rows << " " << m_images[0].cols << " " << image_count() << "\n";
-
-	for (int k = 0; k < this->image_count(); k++)
-	{
-		for (int i = 0; i < this->m_images[0].size().width; i++)
-		{
-			for (int j = 0; j < this->m_images[0].size().height; j++)
-			{
-
-				float value = m_images[k].at<float>(i, j);
-				value *= (1 << 16);
-				output_stream << value << " ";
-				
-			}
-			output_stream << "\n";
-		}
-		output_stream << "\n";
-	}
-}
 
 void MRISequence::write(const std::string & folder, int image_type, bool adjust_contrast)
 {
@@ -238,7 +209,7 @@ void MRISequence::on_trackbar(int, void* p)
 cv::Mat read_image(const std::string & file_name, bool print_info)
 {
 	cv::Mat img;
-	img = cv::imread(file_name, cv::IMREAD_GRAYSCALE);
+	img = cv::imread(file_name, cv::IMREAD_GRAYSCALE | cv::IMREAD_ANYDEPTH);
 
 	//Image can not be read with opencv imread
 	if (img.data == NULL)
@@ -314,10 +285,7 @@ cv::Mat read_image(const std::string & file_name, bool print_info)
 
 		img = itk::OpenCVImageBridge::ITKImageToCVMat(reader->GetOutput(), false);
 	}
-
-	/*cv::namedWindow("Window");
-	cv::imshow("Window", img);
-	cv::waitKey(0);*/
+		
 	
 	cv::Mat dst(img.size(), CV_32F);
 	float depth = 1 << (img.elemSize() * 8);

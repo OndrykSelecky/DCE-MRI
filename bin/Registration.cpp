@@ -85,7 +85,6 @@ features detect_features(const MRISequence& sequence, double max_distance, int m
 		
 	// find how many features are valid
 	auto good_features_count = std::count(valid_features.begin(), valid_features.end(), 1);
-	//std::cout << "Number of features found: " << features_count << "\nValid features: " << good_features_count << "\n";
 
 
 	features final_features(image_count);
@@ -425,6 +424,7 @@ MRISequence registration(MRISequence& sequence, features& features, const int me
 	}
 	
 	MRISequence transformed_sequence;
+	MRISequence triangle_sequence(sequence);
 	
 	if (method == HOMOGRAPHY)
 	{
@@ -435,8 +435,7 @@ MRISequence registration(MRISequence& sequence, features& features, const int me
 	{
 		auto triangles = triangulate(features, sequence);
 		if (show)
-		{
-			MRISequence triangle_sequence(sequence);
+		{			
 			show_triangles(triangle_sequence, triangles, features);
 		}
 

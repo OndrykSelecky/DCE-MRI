@@ -30,6 +30,7 @@ MRISequence MRISession::get_sequence(unsigned int sequence_number)
 	if (m_sequence_folders.size() == 0)
 	{
 		throw std::invalid_argument("Error: Session is empty\n");
+
 	}
 
 	if (sequence_number >= m_sequence_folders.size())
@@ -47,11 +48,12 @@ MRISequence MRISession::get_horizontal_sequence(unsigned int sequence_number)
 	if (m_sequence_folders.size() == 0)
 	{
 		throw std::invalid_argument("Error: Session is empty\n");
+
 	}
 
 	if (sequence_number >= m_image_names[0].size())
 	{
-		throw std::invalid_argument("Error: Sequence number is greater than number of sequences in session\n");
+		throw std::invalid_argument("Error: Sequence number in subscript is greater than number of sequences in session\n");
 	}
 
 	std::vector<std::string> file_names(m_image_names.size());
@@ -74,7 +76,7 @@ void MRISession::read_sequence_folders(bool new_read)
 	set up input stream for reading ordered folder names
 	*/
 	std::ifstream sequence_input_stream;
-	sequence_input_stream.open(m_folder + "/" + "sequences.txt");
+	sequence_input_stream.open(m_folder + "/" + SEQUENCE_ORDER_FILE);
 
 	/*
 	if file was found, read folder names
@@ -130,11 +132,11 @@ void MRISession::read_sequence_folders(bool new_read)
 
 		//Write in file for quicker read
 		std::ofstream output_sequence_stream;
-		output_sequence_stream.open(m_folder + "/" + "sequences.txt");
+		output_sequence_stream.open(m_folder + "/" + SEQUENCE_ORDER_FILE);
 
 		if (!output_sequence_stream.is_open())
 		{
-			std::cout << "Error: Output file " + m_folder + "/" + "sequences.txt" + " couldn't be opened. Folder names were not written";
+			std::cout << "Warning: Output file " + m_folder + "/" + SEQUENCE_ORDER_FILE + " couldn't be opened. Sequence folder names were not written to text file\n";
 			return;
 		}
 
@@ -236,7 +238,7 @@ std::vector<std::string> get_dicom_file_names(const std::string & folder, bool n
 	std::vector<std::string> image_names;
 
 	std::ifstream image_input_stream;
-	image_input_stream.open(folder + "/" + "images.txt");
+	image_input_stream.open(folder + "/" + IMAGE_ORDER_FILE);
 
 
 	if (image_input_stream.is_open() && !new_read)
@@ -283,11 +285,11 @@ std::vector<std::string> get_dicom_file_names(const std::string & folder, bool n
 
 		
 			std::ofstream output_image_stream;
-			output_image_stream.open(folder + "/" + "images.txt");
+			output_image_stream.open(folder + "/" + IMAGE_ORDER_FILE);
 
 			if (!output_image_stream.is_open())
 			{
-				std::cout << "Error: Output file " + folder + "/" + "images.txt" + " couldn't be opened for writing";
+				std::cout << "Error: Output file " + folder + "/" + IMAGE_ORDER_FILE + " couldn't be opened for writing";
 			}
 			else for (const auto& image_name : image_names)
 			{

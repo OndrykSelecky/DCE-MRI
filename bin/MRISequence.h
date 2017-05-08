@@ -43,14 +43,17 @@ public:
 	//Read sequence
 	int read();
 
-	void write_txt(const std::string& file_name);
+	
 
-
-	//write sequence to other image format - png
+	/* 
+	write sequence in folder in png format. 
+	image_type = CV_16UC1 or CV_8UC1.
+	adjust_contrast = save with adjusted contrast or original values (original needed for analysis)
+	*/
 	void write(const std::string& folder, int image_type = CV_16UC1, bool adjust_contrast = false);
 
 
-	//Show sequence
+	//Show sequence in window window_name
 	void show(std::string window_name = std::string(""));
 	
 
